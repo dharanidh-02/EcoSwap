@@ -65,3 +65,4 @@ SESSION_SECRET=your-secret-key-here
 
 # Database (optional, defaults to SQLite)
 DATABASE_URL=sqlite:///ecoswap.db
+"# EcoSwap" 
