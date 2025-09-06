@@ -119,6 +119,17 @@ def register_routes(app):
     @login_required
     def add_product():
         form = ProductForm()
+        current_app.logger.info(f"Add product request - Method: {request.method}, User: {current_user.username}")
+        
+        if request.method == 'POST':
+            current_app.logger.info("Form data received:")
+            current_app.logger.info(f"Title: {form.title.data}")
+            current_app.logger.info(f"Description: {form.description.data}")
+            current_app.logger.info(f"Price: {form.price.data}")
+            current_app.logger.info(f"Category: {form.category.data}")
+            current_app.logger.info(f"Has image: {bool(form.image.data)}")
+            current_app.logger.info(f"Form is valid: {form.validate()}")
+        
         if form.validate_on_submit():
             # Save main image with detailed logging
             image_url = ''
