@@ -3,7 +3,7 @@ from flask import render_template, flash, redirect, url_for, request, current_ap
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from app import db, bcrypt
+from app import db, bcrypt, csrf
 from models import User, Product, Cart, PurchaseHistory
 from forms import (LoginForm, RegistrationForm, EditProfileForm, ChangePasswordForm, 
                    ProductForm, SearchForm, ChatForm)
@@ -302,6 +302,7 @@ def register_routes(app):
         return render_template('ai_chat.html', title='AI Assistant', form=form, chat_history=chat_history)
 
     @app.route('/api/ai_chat', methods=['POST'])
+    @csrf.exempt
     def api_ai_chat():
         """API endpoint for AJAX chat requests"""
         try:

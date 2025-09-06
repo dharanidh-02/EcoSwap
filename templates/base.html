@@ -391,7 +391,7 @@
             }
         });
         
-        // Add message to widget chat with improved styling
+        // Add message to widget chat with improved styling (XSS-safe)
         function addWidgetMessage(role, content) {
             const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
             const messageDiv = document.createElement('div');
@@ -401,27 +401,68 @@
             const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
             if (role === 'user') {
-                messageDiv.innerHTML = `
-                    <div class="d-flex justify-content-end">
-                        <div class="bg-success text-white rounded-4 px-3 py-2 shadow-sm" style="max-width: 85%;">
-                            <div class="fw-medium">${content}</div>
-                            <small class="opacity-75">${timestamp}</small>
-                        </div>
-                    </div>
-                `;
+                // Create user message structure safely
+                const flexDiv = document.createElement('div');
+                flexDiv.className = 'd-flex justify-content-end';
+                
+                const messageContainer = document.createElement('div');
+                messageContainer.className = 'bg-success text-white rounded-4 px-3 py-2 shadow-sm';
+                messageContainer.style.maxWidth = '85%';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'fw-medium message-content';
+                contentDiv.textContent = content; // Safe text rendering
+                
+                const timeDiv = document.createElement('small');
+                timeDiv.className = 'opacity-75';
+                timeDiv.textContent = timestamp;
+                
+                messageContainer.appendChild(contentDiv);
+                messageContainer.appendChild(timeDiv);
+                flexDiv.appendChild(messageContainer);
+                messageDiv.appendChild(flexDiv);
             } else {
-                messageDiv.innerHTML = `
-                    <div class="d-flex justify-content-start">
-                        <div class="bg-white border rounded-4 px-3 py-2 shadow-sm" style="max-width: 85%;">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-robot text-success me-2"></i>
-                                <strong class="text-success">EcoSwap AI</strong>
-                            </div>
-                            <div>${content.replace(/\n/g, '<br>')}</div>
-                            <small class="text-muted">${timestamp}</small>
-                        </div>
-                    </div>
-                `;
+                // Create assistant message structure safely
+                const flexDiv = document.createElement('div');
+                flexDiv.className = 'd-flex justify-content-start';
+                
+                const messageContainer = document.createElement('div');
+                messageContainer.className = 'bg-white border rounded-4 px-3 py-2 shadow-sm';
+                messageContainer.style.maxWidth = '85%';
+                
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'd-flex align-items-center mb-1';
+                
+                const iconElement = document.createElement('i');
+                iconElement.className = 'fas fa-robot text-success me-2';
+                
+                const titleElement = document.createElement('strong');
+                titleElement.className = 'text-success';
+                titleElement.textContent = 'EcoSwap AI';
+                
+                headerDiv.appendChild(iconElement);
+                headerDiv.appendChild(titleElement);
+                
+                // Handle typing indicator HTML content specially
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                if (content.includes('typing-indicator')) {
+                    // Allow typing indicator HTML for loading state
+                    contentDiv.innerHTML = content;
+                } else {
+                    // Safe text rendering for actual messages
+                    contentDiv.textContent = content;
+                }
+                
+                const timeDiv = document.createElement('small');
+                timeDiv.className = 'text-muted';
+                timeDiv.textContent = timestamp;
+                
+                messageContainer.appendChild(headerDiv);
+                messageContainer.appendChild(contentDiv);
+                messageContainer.appendChild(timeDiv);
+                flexDiv.appendChild(messageContainer);
+                messageDiv.appendChild(flexDiv);
             }
             
             chatMessages.appendChild(messageDiv);
@@ -593,6 +634,12 @@
     .card-header .btn:hover {
         background-color: rgba(255, 255, 255, 0.1);
         border-radius: 4px;
+    }
+    
+    /* Message content formatting */
+    .message-content {
+        white-space: pre-wrap; /* Preserve formatting safely */
+        word-wrap: break-word;
     }
     
     /* Mobile responsiveness */
