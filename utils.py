@@ -12,7 +12,16 @@ def allowed_file(filename):
 
 def save_image(form_image, max_size=(800, 800)):
     """Save uploaded image and return the filename"""
-    if not form_image or not allowed_file(form_image.filename):
+    if not form_image:
+        current_app.logger.warning("No image file provided")
+        return ''
+    
+    if not form_image.filename:
+        current_app.logger.warning("Image file has no filename")
+        return ''
+    
+    if not allowed_file(form_image.filename):
+        current_app.logger.warning(f"File type not allowed: {form_image.filename}")
         return ''
     
     # Generate random filename
@@ -21,35 +30,63 @@ def save_image(form_image, max_size=(800, 800)):
     image_fn = random_hex + f_ext
     image_path = os.path.join(current_app.root_path, 'static/uploads', image_fn)
     
+    # Ensure uploads directory exists
+    upload_dir = os.path.join(current_app.root_path, 'static/uploads')
+    os.makedirs(upload_dir, exist_ok=True)
+    
     # Resize image to reduce file size
     try:
+        current_app.logger.info(f"Opening image: {form_image.filename}")
         img = Image.open(form_image)
+        current_app.logger.info(f"Image size: {img.width}x{img.height}")
+        
+        # Convert RGBA to RGB if necessary
+        if img.mode == 'RGBA':
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            img = background
+        
         # Resize if image is too large
         if img.width > max_size[0] or img.height > max_size[1]:
+            current_app.logger.info(f"Resizing image from {img.width}x{img.height} to max {max_size}")
             img.thumbnail(max_size, Image.Resampling.LANCZOS)
+        
+        current_app.logger.info(f"Saving image to: {image_path}")
         img.save(image_path, optimize=True, quality=85)
+        current_app.logger.info(f"Image saved successfully: {image_fn}")
         return f'uploads/{image_fn}'
     except Exception as e:
-        current_app.logger.error(f'Error saving image: {e}')
+        current_app.logger.error(f'Error saving image {form_image.filename}: {str(e)}')
+        import traceback
+        current_app.logger.error(f'Traceback: {traceback.format_exc()}')
         return ''
 
 def save_multiple_images(form_images, max_files=5):
     """Save multiple uploaded images and return list of filenames"""
     if not form_images:
+        current_app.logger.info("No additional images provided")
         return []
     
     saved_images = []
     count = 0
     
-    for form_image in form_images:
+    for i, form_image in enumerate(form_images):
         if count >= max_files:
+            current_app.logger.info(f"Reached max file limit ({max_files}), skipping remaining images")
             break
+        
+        current_app.logger.info(f"Processing additional image {i+1}: {getattr(form_image, 'filename', 'Unknown')}")
         
         if form_image and form_image.filename and allowed_file(form_image.filename):
             image_url = save_image(form_image)
             if image_url:
                 saved_images.append(image_url)
                 count += 1
+                current_app.logger.info(f"Successfully processed additional image {i+1}")
+            else:
+                current_app.logger.error(f"Failed to save additional image {i+1}: {form_image.filename}")
+        else:
+            current_app.logger.warning(f"Invalid or empty additional image {i+1}")
     
     return saved_images
 

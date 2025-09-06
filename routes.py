@@ -145,9 +145,11 @@ def register_routes(app):
             db.session.add(product)
             db.session.flush()  # To get the product ID
             
-            # Save additional images
+            # Save additional images with detailed logging
             if form.additional_images.data:
+                current_app.logger.info(f"Processing additional images: {len(form.additional_images.data)} files")
                 additional_image_urls = save_multiple_images(form.additional_images.data)
+                current_app.logger.info(f"Successfully saved {len(additional_image_urls)} additional images")
                 for i, img_url in enumerate(additional_image_urls):
                     product_image = ProductImage()
                     product_image.product_id = product.id
