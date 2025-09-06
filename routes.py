@@ -120,10 +120,16 @@ def register_routes(app):
     def add_product():
         form = ProductForm()
         if form.validate_on_submit():
-            # Save main image
+            # Save main image with detailed logging
             image_url = ''
             if form.image.data:
+                current_app.logger.info(f"Processing main image: {form.image.data.filename}")
                 image_url = save_image(form.image.data)
+                if image_url:
+                    current_app.logger.info(f"Main image saved successfully: {image_url}")
+                else:
+                    current_app.logger.error(f"Failed to save main image: {form.image.data.filename}")
+                    flash('Main image could not be saved. Please try again with a different image.', 'warning')
             
             # Create product
             product = Product()
