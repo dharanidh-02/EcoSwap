@@ -24,6 +24,7 @@ Preferred communication style: Simple, everyday language.
 - **Icons**: Font Awesome for consistent iconography
 - **JavaScript**: Vanilla JavaScript for interactive features like image previews and form enhancements
 - **Design System**: Custom CSS with eco-friendly green color scheme and smooth animations
+- **Security**: XSS-safe DOM manipulation using textContent instead of innerHTML for user-generated content
 
 ### Database Design
 - **User Management**: User model with relationships to products, cart items, and purchase history
