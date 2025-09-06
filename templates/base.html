@@ -136,60 +136,89 @@
     <!-- Floating AI Chat Widget -->
     <div id="chat-widget" class="position-fixed" style="bottom: 20px; right: 20px; z-index: 1050;">
         <!-- Chat Toggle Button -->
-        <button id="chat-toggle" class="btn btn-success rounded-circle shadow-lg" style="width: 60px; height: 60px;">
-            <i class="fas fa-robot" style="font-size: 1.5rem;"></i>
+        <button id="chat-toggle" class="btn btn-success rounded-circle shadow-lg chat-pulse" style="width: 65px; height: 65px; border: 3px solid rgba(40, 167, 69, 0.3);">
+            <i class="fas fa-robot" style="font-size: 1.6rem;"></i>
         </button>
         
         <!-- Chat Window -->
-        <div id="chat-window" class="card shadow-lg d-none" style="width: 350px; height: 450px; margin-bottom: 80px;">
-            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">
-                    <i class="fas fa-robot me-2"></i>EcoSwap AI Assistant
-                </h6>
-                <button id="chat-close" class="btn btn-sm text-white">
-                    <i class="fas fa-times"></i>
-                </button>
+        <div id="chat-window" class="card shadow-lg d-none chat-window-slide" style="width: 380px; height: 480px; margin-bottom: 85px; border-radius: 15px; overflow: hidden;">
+            <div class="card-header bg-gradient text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                <div class="d-flex align-items-center">
+                    <div class="status-indicator me-2"></div>
+                    <div>
+                        <h6 class="mb-0">
+                            <i class="fas fa-robot me-2"></i>EcoSwap AI Assistant
+                        </h6>
+                        <small class="opacity-75">Online and ready to help</small>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button id="chat-home" class="btn btn-sm text-white" title="Home">
+                        <i class="fas fa-home"></i>
+                    </button>
+                    <button id="chat-minimize" class="btn btn-sm text-white" title="Minimize">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button id="chat-close" class="btn btn-sm text-white" title="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
             
             <div class="card-body p-0 d-flex flex-column">
                 <!-- Chat Messages -->
-                <div id="widget-chat-messages" class="flex-grow-1 p-3" style="overflow-y: auto; max-height: 300px; background-color: #f8f9fa;">
-                    <div class="text-center text-muted py-3">
-                        <i class="fas fa-robot fa-2x mb-2 text-success"></i>
-                        <p class="small mb-2">Hi! I'm your EcoSwap AI Assistant.</p>
-                        <p class="small">Ask me anything about our marketplace!</p>
+                <div id="widget-chat-messages" class="flex-grow-1 p-3" style="overflow-y: auto; max-height: 320px; background: linear-gradient(to bottom, #f8f9fa, #ffffff);">
+                    <div id="welcome-screen" class="text-center text-muted py-3">
+                        <div class="chat-avatar mx-auto mb-3">
+                            <i class="fas fa-robot fa-3x text-success"></i>
+                        </div>
+                        <h6 class="text-success mb-2">Welcome to EcoSwap AI! 🌱</h6>
+                        <p class="small mb-3">I'm here to help you navigate our sustainable marketplace.</p>
                         
-                        <!-- Quick Action Buttons -->
-                        <div class="d-flex flex-wrap gap-1 justify-content-center mt-3">
-                            <button class="btn btn-outline-success btn-xs quick-action" data-message="How do I register an account?">
-                                <small>Register</small>
+                        <!-- Quick Action Buttons with better design -->
+                        <div class="d-flex flex-wrap gap-2 justify-content-center mt-3">
+                            <button class="btn btn-outline-success btn-sm quick-action rounded-pill" data-message="How do I register an account?">
+                                <i class="fas fa-user-plus me-1"></i>Register
                             </button>
-                            <button class="btn btn-outline-success btn-xs quick-action" data-message="How do I sell an item?">
-                                <small>Sell Item</small>
+                            <button class="btn btn-outline-success btn-sm quick-action rounded-pill" data-message="How do I sell an item?">
+                                <i class="fas fa-tag me-1"></i>Sell Item
                             </button>
-                            <button class="btn btn-outline-success btn-xs quick-action" data-message="How do I buy something?">
-                                <small>Buy Item</small>
+                            <button class="btn btn-outline-success btn-sm quick-action rounded-pill" data-message="How do I buy something?">
+                                <i class="fas fa-shopping-cart me-1"></i>Buy Item
+                            </button>
+                            <button class="btn btn-outline-success btn-sm quick-action rounded-pill" data-message="How do I search for products?">
+                                <i class="fas fa-search me-1"></i>Search
                             </button>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Chat Input -->
-                <div class="p-2 border-top">
-                    <div class="input-group input-group-sm">
-                        <input type="text" id="widget-chat-input" class="form-control" placeholder="Ask me anything..." maxlength="200">
-                        <button id="widget-chat-send" class="btn btn-success">
+                <div class="p-3 border-top bg-light">
+                    <div class="input-group">
+                        <input type="text" id="widget-chat-input" class="form-control border-0 shadow-sm" placeholder="Type your message..." maxlength="300" style="border-radius: 25px 0 0 25px;">
+                        <button id="widget-chat-send" class="btn btn-success shadow-sm" style="border-radius: 0 25px 25px 0;">
                             <i class="fas fa-paper-plane"></i>
                         </button>
+                    </div>
+                    <div class="mt-2 d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Press Enter to send</small>
+                        <small class="text-muted">
+                            <span id="char-count">0</span>/300
+                        </small>
                     </div>
                 </div>
             </div>
             
-            <div class="card-footer py-1">
-                <div class="text-center">
-                    <a href="{{ url_for('ai_chat') }}" class="btn btn-link btn-sm text-success">
-                        <small>Open full chat page</small>
+            <div class="card-footer py-2 bg-light border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('ai_chat') }}" class="btn btn-link btn-sm text-success p-0">
+                        <i class="fas fa-expand-alt me-1"></i>
+                        <small>Full Chat</small>
                     </a>
+                    <div class="text-end">
+                        <small class="text-muted">Powered by AI</small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -206,47 +235,116 @@
         const chatToggle = document.getElementById('chat-toggle');
         const chatWindow = document.getElementById('chat-window');
         const chatClose = document.getElementById('chat-close');
+        const chatMinimize = document.getElementById('chat-minimize');
+        const chatHome = document.getElementById('chat-home');
         const chatInput = document.getElementById('widget-chat-input');
         const chatSend = document.getElementById('widget-chat-send');
         const chatMessages = document.getElementById('widget-chat-messages');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const charCount = document.getElementById('char-count');
+        
+        let isMinimized = false;
+        let chatHistory = [];
         
         // Toggle chat window
         chatToggle.addEventListener('click', function() {
-            chatWindow.classList.toggle('d-none');
-            if (!chatWindow.classList.contains('d-none')) {
-                chatInput.focus();
+            if (chatWindow.classList.contains('d-none')) {
+                chatWindow.classList.remove('d-none');
+                chatWindow.style.animation = 'slideInUp 0.3s ease';
+                setTimeout(() => chatInput.focus(), 300);
+            } else {
+                chatWindow.style.animation = 'slideOutDown 0.3s ease';
+                setTimeout(() => chatWindow.classList.add('d-none'), 300);
             }
         });
         
         // Close chat window
         chatClose.addEventListener('click', function() {
-            chatWindow.classList.add('d-none');
+            chatWindow.style.animation = 'slideOutDown 0.3s ease';
+            setTimeout(() => chatWindow.classList.add('d-none'), 300);
         });
+        
+        // Minimize chat window
+        chatMinimize.addEventListener('click', function() {
+            if (!isMinimized) {
+                chatWindow.style.height = '60px';
+                chatMessages.style.display = 'none';
+                document.querySelector('.p-3.border-top').style.display = 'none';
+                document.querySelector('.card-footer').style.display = 'none';
+                chatMinimize.innerHTML = '<i class="fas fa-plus"></i>';
+                isMinimized = true;
+            } else {
+                chatWindow.style.height = '480px';
+                chatMessages.style.display = 'block';
+                document.querySelector('.p-3.border-top').style.display = 'block';
+                document.querySelector('.card-footer').style.display = 'block';
+                chatMinimize.innerHTML = '<i class="fas fa-minus"></i>';
+                isMinimized = false;
+            }
+        });
+        
+        // Home button - reset chat to welcome screen
+        chatHome.addEventListener('click', function() {
+            chatHistory = [];
+            chatMessages.innerHTML = '';
+            chatMessages.appendChild(welcomeScreen);
+            welcomeScreen.style.display = 'block';
+            chatInput.value = '';
+            updateCharCount();
+        });
+        
+        // Character count update
+        chatInput.addEventListener('input', updateCharCount);
+        
+        function updateCharCount() {
+            const count = chatInput.value.length;
+            charCount.textContent = count;
+            if (count > 250) {
+                charCount.parentElement.classList.add('text-warning');
+            } else {
+                charCount.parentElement.classList.remove('text-warning');
+            }
+        }
         
         // Send message function
         function sendMessage() {
             const message = chatInput.value.trim();
             if (!message) return;
             
+            // Hide welcome screen if visible
+            if (welcomeScreen.style.display !== 'none') {
+                welcomeScreen.style.display = 'none';
+            }
+            
             // Add user message
             addWidgetMessage('user', message);
             chatInput.value = '';
+            updateCharCount();
+            
+            // Add to history
+            chatHistory.push({role: 'user', content: message});
             
             // Add loading message
-            const loadingId = addWidgetMessage('assistant', '<i class="fas fa-spinner fa-spin"></i> Thinking...');
+            const loadingId = addWidgetMessage('assistant', '<div class="typing-indicator"><span></span><span></span><span></span></div>');
             
-            // Send to AI
+            // Send to AI with proper error handling and CSRF token
             fetch('/api/ai_chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify({
                     message: message,
-                    history: []
+                    history: chatHistory.slice(-6) // Keep last 6 messages for context
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 // Remove loading message
                 const loadingElement = document.getElementById(loadingId);
@@ -256,17 +354,19 @@
                 
                 if (data.status === 'success') {
                     addWidgetMessage('assistant', data.response);
+                    chatHistory.push({role: 'assistant', content: data.response});
                 } else {
-                    addWidgetMessage('assistant', 'Sorry, I encountered an error. Please try the full chat page.');
+                    addWidgetMessage('assistant', 'I apologize, but I encountered an issue. Please try asking your question again or use the full chat page for better assistance.');
                 }
             })
             .catch(error => {
+                console.error('Chat error:', error);
                 // Remove loading message
                 const loadingElement = document.getElementById(loadingId);
                 if (loadingElement) {
                     loadingElement.remove();
                 }
-                addWidgetMessage('assistant', 'Sorry, I encountered an error. Please try the full chat page.');
+                addWidgetMessage('assistant', 'I\'m experiencing technical difficulties. Please try again in a moment or visit the full chat page for assistance.');
             });
         }
         
@@ -291,26 +391,34 @@
             }
         });
         
-        // Add message to widget chat
+        // Add message to widget chat with improved styling
         function addWidgetMessage(role, content) {
-            const messageId = 'msg-' + Date.now();
+            const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
             const messageDiv = document.createElement('div');
             messageDiv.id = messageId;
-            messageDiv.className = `mb-2 ${role}-message`;
+            messageDiv.className = `mb-3 ${role}-message animate__fadeInUp`;
+            
+            const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
             if (role === 'user') {
                 messageDiv.innerHTML = `
                     <div class="d-flex justify-content-end">
-                        <div class="bg-primary text-white rounded-3 px-2 py-1 small" style="max-width: 80%;">
-                            ${content}
+                        <div class="bg-success text-white rounded-4 px-3 py-2 shadow-sm" style="max-width: 85%;">
+                            <div class="fw-medium">${content}</div>
+                            <small class="opacity-75">${timestamp}</small>
                         </div>
                     </div>
                 `;
             } else {
                 messageDiv.innerHTML = `
                     <div class="d-flex justify-content-start">
-                        <div class="bg-white border rounded-3 px-2 py-1 small" style="max-width: 80%;">
-                            <i class="fas fa-robot text-success me-1"></i>${content}
+                        <div class="bg-white border rounded-4 px-3 py-2 shadow-sm" style="max-width: 85%;">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-robot text-success me-2"></i>
+                                <strong class="text-success">EcoSwap AI</strong>
+                            </div>
+                            <div>${content.replace(/\n/g, '<br>')}</div>
+                            <small class="text-muted">${timestamp}</small>
                         </div>
                     </div>
                 `;
@@ -319,38 +427,190 @@
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
+            // Add smooth scroll effect
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
             return messageId;
         }
+        
+        // Initialize character count
+        updateCharCount();
     });
     </script>
     
     <style>
-    .btn-xs {
-        padding: 0.125rem 0.25rem;
-        font-size: 0.75rem;
-        border-radius: 0.2rem;
+    /* Chat Widget Styles */
+    .chat-pulse {
+        position: relative;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+        }
+        70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+        }
     }
     
     #chat-toggle {
-        transition: transform 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
     
     #chat-toggle:hover {
-        transform: scale(1.1);
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
     }
     
-    #chat-window {
-        animation: slideInUp 0.3s ease;
+    .chat-window-slide {
+        transition: all 0.3s ease;
     }
     
     @keyframes slideInUp {
         from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(30px) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    @keyframes slideOutDown {
+        from {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(30px) scale(0.9);
+        }
+    }
+    
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        background-color: #20c997;
+        border-radius: 50%;
+        animation: blink 2s infinite;
+    }
+    
+    @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0.3; }
+    }
+    
+    .chat-avatar {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .quick-action {
+        transition: all 0.2s ease;
+        border: 2px solid #28a745;
+    }
+    
+    .quick-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .typing-indicator span {
+        width: 8px;
+        height: 8px;
+        background-color: #28a745;
+        border-radius: 50%;
+        animation: typing 1.4s infinite ease-in-out both;
+    }
+    
+    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes typing {
+        0%, 80%, 100% {
+            transform: scale(0);
+        }
+        40% {
+            transform: scale(1);
+        }
+    }
+    
+    .animate__fadeInUp {
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
         }
         to {
             opacity: 1;
             transform: translateY(0);
+        }
+    }
+    
+    #widget-chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    #widget-chat-messages::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    #widget-chat-messages::-webkit-scrollbar-thumb {
+        background: #28a745;
+        border-radius: 3px;
+    }
+    
+    #widget-chat-messages::-webkit-scrollbar-thumb:hover {
+        background: #20c997;
+    }
+    
+    .card-header .btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+        #chat-window {
+            width: 320px !important;
+            height: 400px !important;
+            margin-bottom: 75px !important;
+        }
+        
+        #chat-toggle {
+            width: 55px !important;
+            height: 55px !important;
+        }
+        
+        .quick-action {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
         }
     }
     </style>
