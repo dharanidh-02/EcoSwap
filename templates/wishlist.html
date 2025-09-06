@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="gradient-text">
+                <i class="fas fa-heart me-2 text-danger"></i>My Wishlist
+            </h2>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-success">
+                <i class="fas fa-plus me-1"></i>Browse More Items
+            </a>
+        </div>
+
+        {% if wishlist_items.items %}
+        <div class="row">
+            {% for item in wishlist_items.items %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100 product-card">
+                    <div class="position-relative overflow-hidden">
+                        {% if item.product.image_url %}
+                        <img src="{{ url_for('static', filename=item.product.image_url) }}" 
+                             class="card-img-top product-image" alt="{{ item.product.title }}">
+                        {% else %}
+                        <div class="card-img-top product-placeholder">
+                            <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        {% endif %}
+                        
+                        {% if item.product.is_sold %}
+                        <span class="badge position-absolute top-0 end-0 m-3" 
+                              style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">
+                            SOLD
+                        </span>
+                        {% endif %}
+                        
+                        <div class="category-badge position-absolute top-0 start-0 m-3">
+                            <span class="badge bg-success">{{ item.product.category }}</span>
+                        </div>
+                        
+                        <!-- Remove from wishlist button -->
+                        <div class="position-absolute bottom-0 end-0 m-3">
+                            <a href="{{ url_for('remove_from_wishlist', id=item.product.id) }}" 
+                               class="btn btn-sm btn-danger rounded-circle"
+                               title="Remove from wishlist">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ item.product.title }}</h5>
+                        <p class="card-text flex-grow-1 text-muted">
+                            {{ item.product.description[:80] }}{% if item.product.description|length > 80 %}...{% endif %}
+                        </p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-auto mb-3">
+                            <span class="h4 gradient-text mb-0 fw-bold">${{ "%.2f"|format(item.product.price) }}</span>
+                            <div class="text-end">
+                                <small class="text-muted d-block">by</small>
+                                <strong class="text-success">{{ item.product.owner.username }}</strong>
+                            </div>
+                        </div>
+                        
+                        <small class="text-muted mb-3">
+                            <i class="fas fa-heart me-1"></i>Added {{ item.added_at.strftime('%B %d, %Y') }}
+                        </small>
+                        
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('product_detail', id=item.product.id) }}" 
+                               class="btn btn-outline-success btn-sm flex-fill">
+                                <i class="fas fa-eye me-1"></i>View
+                            </a>
+                            {% if not item.product.is_sold and item.product.owner != current_user %}
+                            <a href="{{ url_for('add_to_cart', id=item.product.id) }}" 
+                               class="btn btn-success btn-sm flex-fill">
+                                <i class="fas fa-cart-plus me-1"></i>Add to Cart
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if wishlist_items.pages > 1 %}
+        <nav aria-label="Wishlist pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if wishlist_items.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('wishlist', page=wishlist_items.prev_num) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in wishlist_items.iter_pages() %}
+                {% if page_num %}
+                {% if page_num != wishlist_items.page %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('wishlist', page=page_num) }}">{{ page_num }}</a>
+                </li>
+                {% else %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% endif %}
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if wishlist_items.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('wishlist', page=wishlist_items.next_num) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty Wishlist -->
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-heart text-muted" style="font-size: 4rem;"></i>
+            </div>
+            <h3 class="text-muted">Your wishlist is empty</h3>
+            <p class="text-muted mb-4">
+                Start adding items you love to keep track of them!
+            </p>
+            <a href="{{ url_for('index') }}" class="btn btn-success">
+                <i class="fas fa-search me-1"></i>Browse Products
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.product-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(16, 185, 129, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.product-image {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.product-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--eco-primary), var(--eco-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>
+{% endblock %}

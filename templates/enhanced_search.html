@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Advanced Search Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card glass">
+                <div class="card-body">
+                    <h4 class="gradient-text mb-4">
+                        <i class="fas fa-search-plus me-2"></i>Advanced Search
+                    </h4>
+                    
+                    <form method="GET" action="{{ url_for('enhanced_search') }}">
+                        <div class="row g-3">
+                            <!-- Search Term -->
+                            <div class="col-md-4">
+                                <label for="search" class="form-label">🔍 Search Keywords</label>
+                                <input type="text" class="form-control" id="search" name="search" 
+                                       value="{{ search }}" placeholder="Enter keywords...">
+                            </div>
+                            
+                            <!-- Category -->
+                            <div class="col-md-3">
+                                <label for="category" class="form-label">📂 Category</label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="">All Categories</option>
+                                    {% for value, label in [
+                                        ('Electronics', '📱 Electronics'),
+                                        ('Clothing', '👕 Clothing'),
+                                        ('Furniture', '🪑 Furniture'),
+                                        ('Books', '📚 Books'),
+                                        ('Sports', '⚽ Sports'),
+                                        ('Home & Garden', '🏡 Home & Garden'),
+                                        ('Toys', '🧸 Toys'),
+                                        ('Other', '📦 Other')
+                                    ] %}
+                                    <option value="{{ value }}" {% if category == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Condition -->
+                            <div class="col-md-3">
+                                <label for="condition" class="form-label">✨ Condition</label>
+                                <select class="form-select" id="condition" name="condition">
+                                    <option value="">Any Condition</option>
+                                    {% for value in ['New', 'Like New', 'Good', 'Fair', 'Poor'] %}
+                                    <option value="{{ value }}" {% if condition == value %}selected{% endif %}>
+                                        {{ value }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Sort -->
+                            <div class="col-md-2">
+                                <label for="sort_by" class="form-label">📊 Sort By</label>
+                                <select class="form-select" id="sort_by" name="sort_by">
+                                    {% for value, label in [
+                                        ('newest', 'Newest First'),
+                                        ('oldest', 'Oldest First'),
+                                        ('price_low', 'Price: Low to High'),
+                                        ('price_high', 'Price: High to Low'),
+                                        ('popular', 'Most Popular')
+                                    ] %}
+                                    <option value="{{ value }}" {% if sort_by == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Price Range -->
+                            <div class="col-md-3">
+                                <label class="form-label">💰 Price Range</label>
+                                <div class="row g-1">
+                                    <div class="col-6">
+                                        <input type="number" class="form-control form-control-sm" 
+                                               name="min_price" value="{{ min_price }}" 
+                                               placeholder="Min $" step="0.01" min="0">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="number" class="form-control form-control-sm" 
+                                               name="max_price" value="{{ max_price }}" 
+                                               placeholder="Max $" step="0.01" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Location -->
+                            <div class="col-md-3">
+                                <label for="location" class="form-label">📍 Location</label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       value="{{ location }}" placeholder="City, State">
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="col-md-6">
+                                <label class="form-label d-block">&nbsp;</label>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-search me-1"></i>Search
+                                    </button>
+                                    <a href="{{ url_for('enhanced_search') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-undo me-1"></i>Clear
+                                    </a>
+                                    {% if current_user.is_authenticated %}
+                                    <a href="{{ url_for('add_product') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-plus me-1"></i>Sell Item
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search Results -->
+    <div class="row">
+        <div class="col-12">
+            {% if products.items %}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="gradient-text mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Found {{ products.total }} product{{ 's' if products.total != 1 else '' }}
+                </h5>
+                <div class="text-muted">
+                    Page {{ products.page }} of {{ products.pages }}
+                </div>
+            </div>
+            
+            <!-- Products Grid -->
+            <div class="row">
+                {% for product in products.items %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100 product-card fade-in">
+                        <div class="position-relative overflow-hidden">
+                            {% if product.image_url %}
+                            <img src="{{ url_for('static', filename=product.image_url) }}" 
+                                 class="card-img-top product-image" alt="{{ product.title }}">
+                            {% else %}
+                            <div class="card-img-top product-placeholder">
+                                <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Badges -->
+                            {% if product.is_sold %}
+                            <span class="badge position-absolute top-0 end-0 m-3" 
+                                  style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">
+                                SOLD
+                            </span>
+                            {% elif product.is_featured %}
+                            <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-3">
+                                <i class="fas fa-star me-1"></i>FEATURED
+                            </span>
+                            {% endif %}
+                            
+                            <div class="category-badge position-absolute top-0 start-0 m-3">
+                                <span class="badge bg-success">{{ product.category }}</span>
+                            </div>
+                            
+                            <!-- Condition Badge -->
+                            <div class="position-absolute bottom-0 start-0 m-3">
+                                <span class="badge {{ get_condition_badge_class(product.condition) }}">
+                                    {{ product.condition }}
+                                </span>
+                            </div>
+                            
+                            <!-- Views -->
+                            <div class="position-absolute bottom-0 end-0 m-3">
+                                <span class="badge bg-dark bg-opacity-75">
+                                    <i class="fas fa-eye me-1"></i>{{ product.views }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ product.title }}</h5>
+                            <p class="card-text flex-grow-1 text-muted">
+                                {{ product.description[:80] }}{% if product.description|length > 80 %}...{% endif %}
+                            </p>
+                            
+                            <!-- Rating -->
+                            {% if product.average_rating > 0 %}
+                            <div class="mb-2 small">
+                                {{ get_rating_stars(product.average_rating)|safe }}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-auto mb-3">
+                                <span class="h4 gradient-text mb-0 fw-bold">${{ "%.2f"|format(product.price) }}</span>
+                                <div class="text-end">
+                                    <small class="text-muted d-block">by</small>
+                                    <a href="{{ url_for('user_profile', username=product.owner.username) }}" 
+                                       class="text-decoration-none">
+                                        <strong class="text-success">{{ product.owner.username }}</strong>
+                                    </a>
+                                    {% if product.owner.is_verified %}
+                                    <i class="fas fa-check-circle text-success ms-1" title="Verified"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if product.location %}
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ product.location }}
+                                </small>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('product_detail', id=product.id) }}" 
+                                   class="btn btn-outline-success btn-sm flex-fill">
+                                    <i class="fas fa-eye me-1"></i>Details
+                                </a>
+                                {% if current_user.is_authenticated and not product.is_sold and product.owner != current_user %}
+                                <a href="{{ url_for('add_to_cart', id=product.id) }}" 
+                                   class="btn btn-success btn-sm flex-fill">
+                                    <i class="fas fa-cart-plus me-1"></i>Add to Cart
+                                </a>
+                                {% endif %}
+                                {% if current_user.is_authenticated and product.owner != current_user %}
+                                <a href="{{ url_for('add_to_wishlist', id=product.id) }}" 
+                                   class="btn btn-outline-danger btn-sm" title="Add to Wishlist">
+                                    <i class="fas fa-heart"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if products.pages > 1 %}
+            <nav aria-label="Search results pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('enhanced_search', page=products.prev_num, 
+                           search=search, category=category, condition=condition, 
+                           min_price=min_price, max_price=max_price, location=location, sort_by=sort_by) }}">
+                            Previous
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in products.iter_pages() %}
+                    {% if page_num %}
+                    {% if page_num != products.page %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('enhanced_search', page=page_num,
+                           search=search, category=category, condition=condition, 
+                           min_price=min_price, max_price=max_price, location=location, sort_by=sort_by) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                    {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if products.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('enhanced_search', page=products.next_num,
+                           search=search, category=category, condition=condition, 
+                           min_price=min_price, max_price=max_price, location=location, sort_by=sort_by) }}">
+                            Next
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <!-- No Results -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-search text-muted" style="font-size: 4rem;"></i>
+                </div>
+                <h3 class="text-muted">No products found</h3>
+                <p class="text-muted mb-4">
+                    Try adjusting your search criteria or browse all categories.
+                </p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-success">
+                        <i class="fas fa-home me-1"></i>Browse All Products
+                    </a>
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('add_product') }}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Be the first to list an item
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.product-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(16, 185, 129, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.product-image {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.product-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.category-badge {
+    z-index: 1;
+}
+
+.fade-in {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--eco-primary), var(--eco-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>
+{% endblock %}

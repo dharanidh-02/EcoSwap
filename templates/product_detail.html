@@ -1,148 +1,420 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <!-- Product Image -->
-        <div class="card">
-            {% if product.image_url %}
-            <img src="{{ url_for('static', filename=product.image_url) }}" 
-                 class="card-img-top" style="height: 400px; object-fit: cover;" alt="{{ product.title }}">
-            {% else %}
-            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 400px;">
-                <i class="fas fa-image text-muted" style="font-size: 5rem;"></i>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <!-- Product Information -->
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <h1 class="card-title">{{ product.title }}</h1>
-                    {% if product.is_sold %}
-                    <span class="badge bg-danger fs-6">SOLD</span>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-3">
-                    <span class="badge bg-success fs-6">{{ product.category }}</span>
-                </div>
-                
-                <h2 class="text-success mb-4">${{ "%.2f"|format(product.price) }}</h2>
-                
-                <div class="mb-4">
-                    <h5>Description</h5>
-                    <p class="text-muted">{{ product.description|nl2br }}</p>
-                </div>
-                
-                <div class="mb-4">
-                    <h6 class="text-muted">Product Details</h6>
-                    <table class="table table-sm table-borderless">
-                        <tr>
-                            <td class="fw-bold">Seller:</td>
-                            <td>{{ product.owner.username }}</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">Listed:</td>
-                            <td>{{ product.created_at.strftime('%B %d, %Y') }}</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">Category:</td>
-                            <td>{{ product.category }}</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">Status:</td>
-                            <td>
-                                {% if product.is_sold %}
-                                <span class="text-danger">Sold</span>
-                                {% else %}
-                                <span class="text-success">Available</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                
-                <!-- Action Buttons -->
-                <div class="d-flex gap-2 flex-wrap">
-                    {% if current_user.is_authenticated %}
-                        {% if product.owner == current_user %}
-                        <!-- Owner Actions -->
-                        <a href="{{ url_for('edit_product', id=product.id) }}" class="btn btn-primary">
-                            <i class="fas fa-edit me-1"></i>Edit
-                        </a>
-                        <a href="{{ url_for('delete_product', id=product.id) }}" 
-                           class="btn btn-danger"
-                           onclick="return confirm('Are you sure you want to delete this product?')">
-                            <i class="fas fa-trash me-1"></i>Delete
-                        </a>
-                        {% elif not product.is_sold %}
-                        <!-- Buyer Actions -->
-                        <a href="{{ url_for('add_to_cart', id=product.id) }}" class="btn btn-success btn-lg">
-                            <i class="fas fa-cart-plus me-2"></i>Add to Cart
-                        </a>
-                        {% endif %}
-                    {% else %}
-                    <!-- Not logged in -->
-                    <a href="{{ url_for('login') }}" class="btn btn-success btn-lg">
-                        <i class="fas fa-sign-in-alt me-2"></i>Login to Purchase
-                    </a>
-                    {% endif %}
-                    
-                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-1"></i>Back to Browse
-                    </a>
-                </div>
-                
-                {% if product.is_sold %}
-                <div class="alert alert-info mt-3">
-                    <i class="fas fa-info-circle me-2"></i>
-                    This item has been sold and is no longer available.
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Related Products -->
-<div class="mt-5">
-    <h4>Similar Items in {{ product.category }}</h4>
-    <hr>
-    
-    {% set related_products = product.owner.products | selectattr('category', 'equalto', product.category) | selectattr('id', 'ne', product.id) | selectattr('is_sold', 'equalto', false) | list %}
-    
-    {% if related_products %}
+<div class="container-fluid">
     <div class="row">
-        {% for related in related_products[:4] %}
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="position-relative">
-                    {% if related.image_url %}
-                    <img src="{{ url_for('static', filename=related.image_url) }}" 
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ related.title }}">
-                    {% else %}
-                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
-                        <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+        <!-- Product Images Gallery -->
+        <div class="col-lg-6 mb-4">
+            <div class="card glass">
+                <div class="card-body">
+                    <!-- Main Image -->
+                    <div class="position-relative mb-3">
+                        {% if product.image_url %}
+                        <img id="main-image" src="{{ url_for('static', filename=product.image_url) }}" 
+                             class="img-fluid rounded-3 shadow-sm w-100" style="height: 450px; object-fit: cover;" 
+                             alt="{{ product.title }}">
+                        {% else %}
+                        <div id="main-image" class="d-flex align-items-center justify-content-center bg-light rounded-3" 
+                             style="height: 450px;">
+                            <i class="fas fa-image text-muted" style="font-size: 5rem;"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Product Status Badges -->
+                        <div class="position-absolute top-0 start-0 m-3">
+                            {% if product.is_sold %}
+                            <span class="badge fs-6 px-3 py-2 rounded-pill" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">
+                                <i class="fas fa-check-circle me-1"></i>SOLD
+                            </span>
+                            {% elif product.is_featured %}
+                            <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill">
+                                <i class="fas fa-star me-1"></i>FEATURED
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Condition Badge -->
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge {{ get_condition_badge_class(product.condition) }} fs-6 px-3 py-2 rounded-pill">
+                                {{ product.condition }}
+                            </span>
+                        </div>
+                        
+                        <!-- Views Counter -->
+                        <div class="position-absolute bottom-0 end-0 m-3">
+                            <span class="badge bg-dark bg-opacity-75 px-3 py-2 rounded-pill">
+                                <i class="fas fa-eye me-1"></i>{{ product.views }} views
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Thumbnail Gallery -->
+                    {% if product.all_images|length > 1 %}
+                    <div class="d-flex gap-2 flex-wrap justify-content-center">
+                        {% for image in product.all_images %}
+                        <img class="thumbnail-image img-thumbnail rounded-3 cursor-pointer" 
+                             src="{{ url_for('static', filename=image) }}" 
+                             style="width: 80px; height: 80px; object-fit: cover;"
+                             onclick="changeMainImage('{{ url_for('static', filename=image) }}')"
+                             alt="Product image">
+                        {% endfor %}
                     </div>
                     {% endif %}
                 </div>
+            </div>
+        </div>
+        
+        <!-- Product Details -->
+        <div class="col-lg-6">
+            <div class="card glass h-100">
                 <div class="card-body">
-                    <h6 class="card-title">{{ related.title }}</h6>
-                    <p class="text-success fw-bold">${{ "%.2f"|format(related.price) }}</p>
-                    <a href="{{ url_for('product_detail', id=related.id) }}" class="btn btn-outline-success btn-sm">
-                        View Details
-                    </a>
+                    <!-- Product Title & Price -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="gradient-text mb-2">{{ product.title }}</h1>
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">
+                                    <i class="fas fa-tag me-1"></i>{{ product.category }}
+                                </span>
+                                {% if product.location %}
+                                <span class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ product.location }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if current_user.is_authenticated and product.owner != current_user and not product.is_sold %}
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('add_to_wishlist', id=product.id) }}">
+                                        <i class="fas fa-heart me-2"></i>
+                                        {% if in_wishlist %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('send_message', recipient_id=product.owner_id, product_id=product.id) }}">
+                                        <i class="fas fa-envelope me-2"></i>Message Seller
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Price & Rating -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h2 class="gradient-text fw-bold mb-0">${{ "%.2f"|format(product.price) }}</h2>
+                            <small class="text-muted">Listed {{ product.created_at.strftime('%B %d, %Y') }}</small>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            {% if product.average_rating > 0 %}
+                            <div class="mb-2">
+                                {{ get_rating_stars(product.average_rating)|safe }}
+                                <small class="text-muted">({{ product.reviews|length }} reviews)</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h5 class="gradient-text">
+                            <i class="fas fa-info-circle me-2"></i>Description
+                        </h5>
+                        <p class="text-muted mb-0">{{ product.description|nl2br }}</p>
+                    </div>
+                    
+                    <!-- Seller Information -->
+                    <div class="card border mb-4">
+                        <div class="card-body py-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    {% if product.owner.avatar_url %}
+                                    <img src="{{ url_for('static', filename=product.owner.avatar_url) }}" 
+                                         class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                         style="width: 50px; height: 50px;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-1">
+                                            <a href="{{ url_for('user_profile', username=product.owner.username) }}" 
+                                               class="text-decoration-none text-success">
+                                                {{ product.owner.full_name }}
+                                            </a>
+                                            {% if product.owner.is_verified %}
+                                            <i class="fas fa-check-circle text-success ms-1" title="Verified Seller"></i>
+                                            {% endif %}
+                                        </h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-store me-1"></i>{{ product.owner.total_sales }} sales
+                                            {% if product.owner.average_rating > 0 %}
+                                            • {{ get_rating_stars(product.owner.average_rating)|safe }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                                {% if current_user.is_authenticated and product.owner != current_user %}
+                                <a href="{{ url_for('send_message', recipient_id=product.owner_id, product_id=product.id) }}" 
+                                   class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-envelope me-1"></i>Message
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    {% if current_user.is_authenticated %}
+                        {% if product.owner == current_user %}
+                        <!-- Owner Actions -->
+                        <div class="d-grid gap-2">
+                            <div class="row">
+                                <div class="col-6">
+                                    <a href="{{ url_for('edit_product', id=product.id) }}" class="btn btn-primary w-100">
+                                        <i class="fas fa-edit me-1"></i>Edit Product
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="{{ url_for('delete_product', id=product.id) }}" 
+                                       class="btn btn-outline-danger w-100"
+                                       onclick="return confirm('Are you sure you want to delete this product?')">
+                                        <i class="fas fa-trash me-1"></i>Delete
+                                    </a>
+                                </div>
+                            </div>
+                            {% if offers %}
+                            <div class="mt-3">
+                                <h6 class="text-success">
+                                    <i class="fas fa-handshake me-2"></i>Offers Received ({{ offers|length }})
+                                </h6>
+                                {% for offer in offers[:3] %}
+                                <div class="card border-success border-opacity-25 mb-2">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong class="text-success">${{ "%.2f"|format(offer.amount) }}</strong>
+                                                <small class="text-muted">from {{ offer.buyer.username }}</small>
+                                                {% if offer.message %}
+                                                <br><small class="text-muted">"{{ offer.message[:50] }}..."</small>
+                                                {% endif %}
+                                            </div>
+                                            {% if offer.status == 'pending' %}
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('respond_to_offer', offer_id=offer.id, action='accept') }}" 
+                                                   class="btn btn-success btn-sm">Accept</a>
+                                                <a href="{{ url_for('respond_to_offer', offer_id=offer.id, action='reject') }}" 
+                                                   class="btn btn-outline-danger btn-sm">Decline</a>
+                                            </div>
+                                            {% else %}
+                                            <span class="badge bg-{{ 'success' if offer.status == 'accepted' else 'danger' }}">
+                                                {{ offer.status.title() }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% elif not product.is_sold %}
+                        <!-- Buyer Actions -->
+                        <div class="d-grid gap-2">
+                            <div class="row">
+                                <div class="col-6">
+                                    <a href="{{ url_for('add_to_cart', id=product.id) }}" class="btn btn-success w-100 btn-lg">
+                                        <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="{{ url_for('make_offer', product_id=product.id) }}" class="btn btn-outline-primary w-100 btn-lg">
+                                        <i class="fas fa-handshake me-2"></i>Make Offer
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <a href="{{ url_for('add_to_wishlist', id=product.id) }}" 
+                                       class="btn btn-outline-danger w-100">
+                                        <i class="fas fa-heart me-1"></i>
+                                        {% if in_wishlist %}Remove from Wishlist{% else %}Wishlist{% endif %}
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="{{ url_for('send_message', recipient_id=product.owner_id, product_id=product.id) }}" 
+                                       class="btn btn-outline-success w-100">
+                                        <i class="fas fa-envelope me-1"></i>Contact Seller
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                    <!-- Not logged in -->
+                    <div class="d-grid">
+                        <a href="{{ url_for('login') }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Purchase
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if product.is_sold %}
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        This item has been sold and is no longer available.
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
-    {% else %}
-    <p class="text-muted">No other items in this category from this seller.</p>
+    
+    <!-- Reviews Section -->
+    {% if reviews %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card glass">
+                <div class="card-body">
+                    <h4 class="gradient-text mb-4">
+                        <i class="fas fa-star me-2"></i>Customer Reviews ({{ reviews|length }})
+                    </h4>
+                    {% for review in reviews %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <strong>{{ review.reviewer.username }}</strong>
+                                <div class="ms-3">
+                                    {{ get_rating_stars(review.rating)|safe }}
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ review.created_at.strftime('%B %d, %Y') }}</small>
+                        </div>
+                        {% if review.comment %}
+                        <p class="text-muted mb-0">{{ review.comment }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Similar Products -->
+    {% if similar_products %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="gradient-text mb-4">
+                <i class="fas fa-lightbulb me-2"></i>Similar Items
+            </h4>
+            <div class="row">
+                {% for similar in similar_products %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100 product-card">
+                        <div class="position-relative overflow-hidden">
+                            {% if similar.image_url %}
+                            <img src="{{ url_for('static', filename=similar.image_url) }}" 
+                                 class="card-img-top product-image" alt="{{ similar.title }}">
+                            {% else %}
+                            <div class="card-img-top product-placeholder">
+                                <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            {% endif %}
+                            <div class="category-badge position-absolute top-0 start-0 m-2">
+                                <span class="badge bg-success">{{ similar.category }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">{{ similar.title }}</h6>
+                            <p class="h5 gradient-text fw-bold">${{ "%.2f"|format(similar.price) }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">by {{ similar.owner.username }}</small>
+                                <a href="{{ url_for('product_detail', id=similar.id) }}" class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
     {% endif %}
 </div>
+
+<script>
+function changeMainImage(imageSrc) {
+    document.getElementById('main-image').src = imageSrc;
+    
+    // Update active thumbnail
+    document.querySelectorAll('.thumbnail-image').forEach(thumb => {
+        thumb.classList.remove('border-success', 'border-3');
+    });
+    event.target.classList.add('border-success', 'border-3');
+}
+
+// Set first thumbnail as active
+document.addEventListener('DOMContentLoaded', function() {
+    const firstThumb = document.querySelector('.thumbnail-image');
+    if (firstThumb) {
+        firstThumb.classList.add('border-success', 'border-3');
+    }
+});
+</script>
+
+<style>
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.thumbnail-image {
+    transition: all 0.3s ease;
+}
+
+.thumbnail-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.product-image {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.product-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--eco-primary), var(--eco-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>
 {% endblock %}

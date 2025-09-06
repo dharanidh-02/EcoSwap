@@ -60,9 +60,18 @@ def create_app():
         from models import (User, Product, Cart, PurchaseHistory, ProductImage, 
                            Review, Wishlist, Offer, Message, Notification)
         import routes
+        from utils import get_condition_badge_class, get_rating_stars
         
         # Create database tables
         db.create_all()
+        
+        # Add utility functions to template context
+        @app.context_processor
+        def utility_processor():
+            return dict(
+                get_condition_badge_class=get_condition_badge_class,
+                get_rating_stars=get_rating_stars
+            )
         
         # Register routes
         routes.register_routes(app)
