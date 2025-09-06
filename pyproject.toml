@@ -16,4 +16,5 @@ dependencies = [
     "wtforms>=3.2.1",
     "flask-bcrypt>=1.0.1",
     "pillow>=11.3.0",
+    "google-genai>=1.33.0",
 ]
