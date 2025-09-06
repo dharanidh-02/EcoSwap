@@ -160,6 +160,13 @@ def register_routes(app):
             db.session.commit()
             flash('Your product has been listed!', 'success')
             return redirect(url_for('my_listings'))
+        else:
+            # Log form validation errors for debugging
+            if form.errors:
+                current_app.logger.warning(f"Form validation errors: {form.errors}")
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        current_app.logger.warning(f"Field {field}: {error}")
         
         return render_template('add_product.html', title='Add Product', form=form)
 
