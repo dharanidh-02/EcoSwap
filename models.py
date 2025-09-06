@@ -35,20 +35,23 @@ class User(UserMixin, db.Model):
     @property
     def average_rating(self):
         # Average rating from reviews of products they sold
-        product_reviews = []
-        for product in self.products:
-            product_reviews.extend(product.reviews)
-        if not product_reviews:
+        try:
+            product_reviews = []
+            for product in self.products:
+                if hasattr(product, 'reviews'):
+                    product_reviews.extend(product.reviews)
+            if not product_reviews:
+                return 0
+            return sum(review.rating for review in product_reviews) / len(product_reviews)
+        except:
             return 0
-        return sum(review.rating for review in product_reviews) / len(product_reviews)
     
     @property
     def unread_notifications_count(self):
-        return len([n for n in self.notifications if not n.is_read])
-    
-    @property
-    def unread_messages_count(self):
-        return len([m for m in self.received_messages if not m.is_read])
+        try:
+            return len([n for n in self.notifications if not n.is_read])
+        except:
+            return 0
     
     def __repr__(self):
         return f'<User {self.username}>'
@@ -80,9 +83,13 @@ class Product(db.Model):
     
     @property
     def average_rating(self):
-        if not self.reviews:
+        try:
+            if not hasattr(self, 'reviews') or not self.reviews:
+                return 0
+            total_rating = sum(review.rating for review in self.reviews)
+            return total_rating / len(self.reviews)
+        except:
             return 0
-        return sum(review.rating for review in self.reviews) / len(self.reviews)
     
     @property
     def all_images(self):

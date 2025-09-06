@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card glass">
+            <div class="card-header">
+                <h5 class="gradient-text mb-0">
+                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                    {% if recipient %}
+                    to {{ recipient.username }}
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    {% if not recipient %}
+                    <div class="mb-3">
+                        {{ form.recipient_id.label(class="form-label") }}
+                        {{ form.recipient_id(class="form-select") }}
+                        {% for error in form.recipient_id.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if product %}
+                    <div class="mb-3">
+                        <div class="card border-success">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    {% if product.image_url %}
+                                    <img src="{{ url_for('static', filename='uploads/' + product.image_url) }}" 
+                                         alt="{{ product.title }}" class="me-3" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-1">{{ product.title }}</h6>
+                                        <p class="text-muted mb-0">${{ "%.2f"|format(product.price) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        {{ form.subject.label(class="form-label") }}
+                        {{ form.subject(class="form-control") }}
+                        {% for error in form.subject.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.content.label(class="form-label") }}
+                        {{ form.content(class="form-control", rows="5", placeholder="Type your message here...") }}
+                        {% for error in form.content.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-paper-plane me-1"></i>Send Message
+                        </button>
+                        <a href="{{ url_for('messages') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Messages
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--eco-primary), var(--eco-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>
+{% endblock %}

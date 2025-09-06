@@ -45,7 +45,7 @@ def register_routes(app):
         form = LoginForm()
         if form.validate_on_submit():
             user = User.query.filter_by(email=form.email.data).first()
-            if user and check_password_hash(user.password_hash, form.password.data):
+            if user and user.password_hash and check_password_hash(user.password_hash, form.password.data):
                 login_user(user)
                 next_page = request.args.get('next')
                 flash('Login successful!', 'success')
@@ -61,11 +61,10 @@ def register_routes(app):
         
         form = RegistrationForm()
         if form.validate_on_submit():
-            user = User(
-                username=form.username.data,
-                email=form.email.data,
-                password_hash=generate_password_hash(form.password.data)
-            )
+            user = User()
+            user.username = form.username.data
+            user.email = form.email.data
+            user.password_hash = generate_password_hash(form.password.data)
             db.session.add(user)
             db.session.commit()
             flash('Registration successful!', 'success')
@@ -106,7 +105,7 @@ def register_routes(app):
     def change_password():
         form = ChangePasswordForm()
         if form.validate_on_submit():
-            if check_password_hash(current_user.password_hash, form.current_password.data):
+            if current_user.password_hash and check_password_hash(current_user.password_hash, form.current_password.data):
                 current_user.password_hash = generate_password_hash(form.new_password.data)
                 db.session.commit()
                 flash('Your password has been updated!', 'success')
@@ -127,17 +126,16 @@ def register_routes(app):
                 image_url = save_image(form.image.data)
             
             # Create product
-            product = Product(
-                title=form.title.data,
-                description=form.description.data,
-                category=form.category.data,
-                condition=form.condition.data,
-                price=form.price.data,
-                location=form.location.data,
-                image_url=image_url,
-                is_featured=form.is_featured.data,
-                owner_id=current_user.id
-            )
+            product = Product()
+            product.title = form.title.data
+            product.description = form.description.data
+            product.category = form.category.data
+            product.condition = form.condition.data
+            product.price = form.price.data
+            product.location = form.location.data
+            product.image_url = image_url
+            product.is_featured = form.is_featured.data
+            product.owner_id = current_user.id
             db.session.add(product)
             db.session.flush()  # To get the product ID
             
@@ -145,11 +143,10 @@ def register_routes(app):
             if form.additional_images.data:
                 additional_image_urls = save_multiple_images(form.additional_images.data)
                 for i, img_url in enumerate(additional_image_urls):
-                    product_image = ProductImage(
-                        product_id=product.id,
-                        image_url=img_url,
-                        order_index=i + 1
-                    )
+                    product_image = ProductImage()
+                    product_image.product_id = product.id
+                    product_image.image_url = img_url
+                    product_image.order_index = i + 1
                     db.session.add(product_image)
             
             db.session.commit()
@@ -262,7 +259,9 @@ def register_routes(app):
             flash('Product is already in your cart.', 'info')
             return redirect(url_for('cart'))
         
-        cart_item = Cart(user_id=current_user.id, product_id=id)
+        cart_item = Cart()
+        cart_item.user_id = current_user.id
+        cart_item.product_id = id
         db.session.add(cart_item)
         db.session.commit()
         flash('Product added to cart!', 'success')
@@ -297,11 +296,10 @@ def register_routes(app):
         for cart_item in cart_items:
             if not cart_item.product.is_sold:
                 # Create purchase history
-                purchase = PurchaseHistory(
-                    user_id=current_user.id,
-                    product_id=cart_item.product_id,
-                    price_paid=cart_item.product.price
-                )
+                purchase = PurchaseHistory()
+                purchase.user_id = current_user.id
+                purchase.product_id = cart_item.product_id
+                purchase.price_paid = cart_item.product.price
                 db.session.add(purchase)
                 
                 # Mark product as sold
@@ -458,7 +456,9 @@ def register_routes(app):
         if existing_item:
             flash('Product is already in your wishlist.', 'info')
         else:
-            wishlist_item = Wishlist(user_id=current_user.id, product_id=id)
+            wishlist_item = Wishlist()
+            wishlist_item.user_id = current_user.id
+            wishlist_item.product_id = id
             db.session.add(wishlist_item)
             db.session.commit()
             flash('Product added to wishlist!', 'success')
@@ -725,6 +725,7 @@ def register_routes(app):
         return redirect(url_for('notifications'))
 
     # Analytics Dashboard
+
     @app.route('/analytics')
     @login_required
     def analytics():

@@ -60,9 +60,6 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('wishlist') }}">
                             <i class="fas fa-heart me-1"></i>Wishlist
-                            {% if current_user.wishlists %}
-                            <span class="badge bg-danger rounded-pill">{{ current_user.wishlists|length }}</span>
-                            {% endif %}
                         </a>
                     </li>
                     {% endif %}
@@ -73,11 +70,16 @@
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="{{ url_for('cart') }}">
                             <i class="fas fa-shopping-cart me-1"></i>Cart
-                            {% if current_user.cart_items %}
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                {{ current_user.cart_items|length }}
-                            </span>
-                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('messages') }}">
+                            <i class="fas fa-envelope me-1"></i>Messages
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('notifications') }}">
+                            <i class="fas fa-bell me-1"></i>Notifications
                         </a>
                     </li>
                     <li class="nav-item dropdown">

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="gradient-text mb-4">
+            <i class="fas fa-envelope me-2"></i>Messages
+        </h2>
+
+        {% if received_messages.items %}
+        <div class="row">
+            <div class="col-12">
+                <h5 class="text-success mb-3">
+                    <i class="fas fa-inbox me-2"></i>Inbox ({{ received_messages.total }})
+                </h5>
+                
+                <div class="list-group mb-4">
+                    {% for message in received_messages.items %}
+                    <div class="list-group-item {% if not message.is_read %}list-group-item-light border-success{% endif %}">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-0 fw-bold">{{ message.subject or 'No Subject' }}</h6>
+                                    {% if not message.is_read %}
+                                    <span class="badge bg-success ms-2">New</span>
+                                    {% endif %}
+                                </div>
+                                <p class="mb-1">{{ message.content[:100] }}{% if message.content|length > 100 %}...{% endif %}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        From: <strong>{{ message.sender.username }}</strong>
+                                        {% if message.product %}
+                                        • About: <a href="{{ url_for('product_detail', id=message.product_id) }}" class="text-decoration-none">{{ message.product.title }}</a>
+                                        {% endif %}
+                                    </small>
+                                    <small class="text-muted">{{ message.created_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                                </div>
+                            </div>
+                            <div class="ms-3">
+                                {% if not message.is_read %}
+                                <a href="{{ url_for('mark_message_read', message_id=message.id) }}" 
+                                   class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-envelope-open me-1"></i>Mark Read
+                                </a>
+                                {% endif %}
+                                <a href="{{ url_for('send_message', recipient_id=message.sender_id) }}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-reply me-1"></i>Reply
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if received_messages.pages > 1 %}
+                <nav aria-label="Messages pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if received_messages.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('messages', page=received_messages.prev_num) }}">Previous</a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in received_messages.iter_pages() %}
+                        {% if page_num %}
+                        {% if page_num != received_messages.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('messages', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% if received_messages.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('messages', page=received_messages.next_num) }}">Next</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+
+        {% else %}
+        <!-- No Messages -->
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-envelope text-muted" style="font-size: 4rem;"></i>
+            </div>
+            <h3 class="text-muted">No messages yet</h3>
+            <p class="text-muted mb-4">
+                Messages from buyers and sellers will appear here.
+            </p>
+            <a href="{{ url_for('index') }}" class="btn btn-success">
+                <i class="fas fa-search me-1"></i>Browse Products
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.gradient-text {
+    background: linear-gradient(135deg, var(--eco-primary), var(--eco-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>
+{% endblock %}
