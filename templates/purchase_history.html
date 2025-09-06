@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-history me-2"></i>Purchase History</h2>
+    <a href="{{ url_for('index') }}" class="btn btn-success">
+        <i class="fas fa-shopping-bag me-1"></i>Shop More
+    </a>
+</div>
+
+{% if purchases.items %}
+<div class="row">
+    {% for purchase in purchases.items %}
+    {% set product = purchase.product %}
+    <div class="col-12 mb-3">
+        <div class="card">
+            <div class="row g-0">
+                <div class="col-md-2">
+                    {% if product.image_url %}
+                    <img src="{{ url_for('static', filename=product.image_url) }}" 
+                         class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="{{ product.title }}">
+                    {% else %}
+                    <div class="d-flex align-items-center justify-content-center bg-light rounded-start h-100">
+                        <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-10">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 class="card-title">{{ product.title }}</h5>
+                                <p class="card-text text-muted">{{ product.description[:200] }}{% if product.description|length > 200 %}...{% endif %}</p>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <span class="badge bg-secondary">{{ product.category }}</span>
+                                        Purchased from {{ product.owner.username }}
+                                    </small>
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <div class="mb-2">
+                                    <strong class="text-success h5">${{ "%.2f"|format(purchase.price_paid) }}</strong>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ purchase.purchase_date.strftime('%B %d, %Y') }}
+                                    </small>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ purchase.purchase_date.strftime('%I:%M %p') }}
+                                    </small>
+                                </div>
+                                <div>
+                                    <span class="badge bg-success">Completed</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('product_detail', id=product.id) }}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i>View Product
+                                    </a>
+                                    <!-- Future: Add review/rating functionality -->
+                                    <button class="btn btn-outline-warning btn-sm" disabled>
+                                        <i class="fas fa-star me-1"></i>Leave Review
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if purchases.pages > 1 %}
+<nav aria-label="Purchase history pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if purchases.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('purchase_history', page=purchases.prev_num) }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        {% for page_num in purchases.iter_pages() %}
+        {% if page_num %}
+        {% if page_num != purchases.page %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('purchase_history', page=page_num) }}">{{ page_num }}</a>
+        </li>
+        {% else %}
+        <li class="page-item active">
+            <span class="page-link">{{ page_num }}</span>
+        </li>
+        {% endif %}
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">...</span>
+        </li>
+        {% endif %}
+        {% endfor %}
+        
+        {% if purchases.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('purchase_history', page=purchases.next_num) }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<!-- Empty State -->
+<div class="text-center py-5">
+    <i class="fas fa-receipt text-muted" style="font-size: 4rem;"></i>
+    <h3 class="mt-3 text-muted">No purchases yet</h3>
+    <p class="text-muted">When you make your first purchase, it will appear here.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-success btn-lg">
+        <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+    </a>
+</div>
+{% endif %}
+
+<!-- Purchase Statistics -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Your Purchase Statistics</h5>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <h4 class="text-primary">{{ purchases.total }}</h4>
+                <p class="text-muted mb-0">Total Purchases</p>
+            </div>
+            <div class="col-md-3">
+                <h4 class="text-success">${{ "%.2f"|format(current_user.purchases | map(attribute='price_paid') | sum) }}</h4>
+                <p class="text-muted mb-0">Total Spent</p>
+            </div>
+            <div class="col-md-3">
+                <h4 class="text-warning">{{ current_user.purchases | map(attribute='product.category') | unique | list | length }}</h4>
+                <p class="text-muted mb-0">Categories Purchased</p>
+            </div>
+            <div class="col-md-3">
+                <h4 class="text-info">
+                    {% if current_user.purchases %}
+                    {{ (current_user.purchases | map(attribute='price_paid') | sum / current_user.purchases | length) | round(2) }}
+                    {% else %}
+                    0.00
+                    {% endif %}
+                </h4>
+                <p class="text-muted mb-0">Average Purchase</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

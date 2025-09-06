@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-plus me-2"></i>List New Product</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Product Title</label>
+                        {{ form.title(class="form-control", placeholder="Enter a descriptive title") }}
+                        {% for error in form.title.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            {{ form.category(class="form-select") }}
+                            {% for error in form.category.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="price" class="form-label">Price ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                {{ form.price(class="form-control", placeholder="0.00", step="0.01") }}
+                            </div>
+                            {% for error in form.price.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        {{ form.description(class="form-control", rows="4", placeholder="Describe your item in detail...") }}
+                        {% for error in form.description.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="image" class="form-label">Product Image</label>
+                        {{ form.image(class="form-control") }}
+                        <div class="form-text">Upload an image of your product (JPG, PNG, GIF - Max 16MB)</div>
+                        {% for error in form.image.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Cancel
+                        </a>
+                        {{ form.submit(class="btn btn-success") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Tips Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for a Great Listing</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use a clear, descriptive title</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Include detailed descriptions and condition</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Upload high-quality photos</li>
+                    <li class="mb-0"><i class="fas fa-check text-success me-2"></i>Price fairly based on condition</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

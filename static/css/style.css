@@ -1,0 +1,243 @@
+/* EcoSwap Custom Styles */
+:root {
+    --eco-primary: #28a745;
+    --eco-secondary: #20c997;
+    --eco-success: #198754;
+    --eco-light: #f8f9fa;
+    --eco-dark: #212529;
+}
+
+/* Global Styles */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navigation */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+    border: 1px solid #d4edda;
+}
+
+/* Product Cards */
+.product-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.product-image {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.product-placeholder {
+    height: 200px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.category-badge {
+    z-index: 10;
+}
+
+/* Form Styling */
+.form-control:focus {
+    border-color: var(--eco-primary);
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.form-select:focus {
+    border-color: var(--eco-primary);
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Button Enhancements */
+.btn-success {
+    background-color: var(--eco-primary);
+    border-color: var(--eco-primary);
+}
+
+.btn-success:hover {
+    background-color: var(--eco-success);
+    border-color: var(--eco-success);
+}
+
+.btn-outline-success {
+    color: var(--eco-primary);
+    border-color: var(--eco-primary);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--eco-primary);
+    border-color: var(--eco-primary);
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Alert Styling */
+.alert {
+    border: none;
+    border-radius: 8px;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+/* Pagination */
+.pagination .page-link {
+    color: var(--eco-primary);
+    border-color: #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--eco-primary);
+    border-color: var(--eco-primary);
+}
+
+.pagination .page-link:hover {
+    color: var(--eco-success);
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}
+
+/* Utility Classes */
+.text-eco-primary {
+    color: var(--eco-primary) !important;
+}
+
+.bg-eco-primary {
+    background-color: var(--eco-primary) !important;
+}
+
+.border-eco-primary {
+    border-color: var(--eco-primary) !important;
+}
+
+/* Image Upload Preview */
+.image-preview {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Loading States */
+.btn.loading {
+    pointer-events: none;
+    opacity: 0.65;
+}
+
+.btn.loading::after {
+    content: "";
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.5rem;
+    border: 0.15em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    animation: spinner-border 0.75s linear infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 1rem !important;
+    }
+    
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .product-card .card-body {
+        padding: 1rem;
+    }
+    
+    .btn-group.w-100 .btn {
+        font-size: 0.875rem;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --eco-light: #343a40;
+        --eco-dark: #f8f9fa;
+    }
+}
+
+/* Animation for page transitions */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--eco-primary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--eco-success);
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .btn,
+    footer {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}
