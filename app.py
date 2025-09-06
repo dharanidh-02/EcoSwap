@@ -57,7 +57,8 @@ def create_app():
     
     with app.app_context():
         # Import models and register routes
-        from models import User, Product, Cart, PurchaseHistory
+        from models import (User, Product, Cart, PurchaseHistory, ProductImage, 
+                           Review, Wishlist, Offer, Message, Notification)
         import routes
         
         # Create database tables
