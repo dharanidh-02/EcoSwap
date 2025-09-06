@@ -2,49 +2,74 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="hero-section bg-light rounded-3 p-5 mb-4">
-    <div class="row align-items-center">
+<div class="hero-section p-5 mb-5 fade-in">
+    <div class="row align-items-center position-relative">
         <div class="col-md-8">
-            <h1 class="display-5 fw-bold text-success">Welcome to EcoSwap</h1>
-            <p class="lead">Your sustainable marketplace for quality second-hand items. Buy, sell, and contribute to a greener planet.</p>
+            <h1 class="display-4 fw-bold">Welcome to EcoSwap</h1>
+            <p class="lead fs-5 mb-4">Your sustainable marketplace for quality second-hand items. Buy, sell, and contribute to a greener planet. 🌱</p>
             {% if not current_user.is_authenticated %}
-            <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">Get Started</a>
+            <div class="d-flex gap-3 align-items-center">
+                <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Get Started
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-success btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </a>
+            </div>
+            {% else %}
+            <div class="d-flex gap-3 align-items-center">
+                <a href="{{ url_for('add_product') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus me-2"></i>Sell an Item
+                </a>
+                <a href="{{ url_for('cart') }}" class="btn btn-outline-success btn-lg">
+                    <i class="fas fa-shopping-cart me-2"></i>View Cart
+                </a>
+            </div>
             {% endif %}
         </div>
         <div class="col-md-4 text-center">
-            <i class="fas fa-recycle text-success" style="font-size: 8rem; opacity: 0.7;"></i>
+            <div class="float">
+                <i class="fas fa-leaf gradient-text" style="font-size: 8rem;"></i>
+            </div>
+            <div class="mt-3">
+                <span class="badge bg-success rounded-pill px-3 py-2 fs-6">♻️ Eco-Friendly</span>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Search and Filter -->
-<div class="row mb-4">
+<div class="row mb-5">
     <div class="col-12">
-        <div class="card">
+        <div class="card glass slide-in-left">
             <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-filter text-success me-2"></i>
+                    <h5 class="mb-0 gradient-text">Find Your Perfect Item</h5>
+                </div>
                 <form method="GET" action="{{ url_for('index') }}">
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-4">
-                            <label for="search" class="form-label">Search Products</label>
+                        <div class="col-md-5">
+                            <label for="search" class="form-label">🔍 Search Products</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-search"></i></span>
                                 <input type="text" class="form-control" id="search" name="search" 
-                                       value="{{ request.args.get('search', '') }}" placeholder="Search by title...">
+                                       value="{{ request.args.get('search', '') }}" placeholder="What are you looking for?">
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <label for="category" class="form-label">Category</label>
+                            <label for="category" class="form-label">📂 Category</label>
                             <select class="form-select" id="category" name="category">
                                 <option value="">All Categories</option>
                                 {% for value, label in [
-                                    ('Electronics', 'Electronics'),
-                                    ('Clothing', 'Clothing'),
-                                    ('Furniture', 'Furniture'),
-                                    ('Books', 'Books'),
-                                    ('Sports', 'Sports'),
-                                    ('Home & Garden', 'Home & Garden'),
-                                    ('Toys', 'Toys'),
-                                    ('Other', 'Other')
+                                    ('Electronics', '📱 Electronics'),
+                                    ('Clothing', '👕 Clothing'),
+                                    ('Furniture', '🪑 Furniture'),
+                                    ('Books', '📚 Books'),
+                                    ('Sports', '⚽ Sports'),
+                                    ('Home & Garden', '🏡 Home & Garden'),
+                                    ('Toys', '🧸 Toys'),
+                                    ('Other', '📦 Other')
                                 ] %}
                                 <option value="{{ value }}" {% if request.args.get('category') == value %}selected{% endif %}>
                                     {{ label }}
@@ -53,14 +78,14 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-success w-100">
                                 <i class="fas fa-search me-1"></i>Search
                             </button>
                         </div>
-                        <div class="col-md-3 text-end">
+                        <div class="col-md-2">
                             {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('add_product') }}" class="btn btn-outline-success">
-                                <i class="fas fa-plus me-1"></i>Sell an Item
+                            <a href="{{ url_for('add_product') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-plus me-1"></i>Sell Item
                             </a>
                             {% endif %}
                         </div>
@@ -76,38 +101,41 @@
 <div class="row">
     {% for product in products.items %}
     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-        <div class="card h-100 product-card">
-            <div class="position-relative">
+        <div class="card h-100 product-card fade-in">
+            <div class="position-relative overflow-hidden">
                 {% if product.image_url %}
                 <img src="{{ url_for('static', filename=product.image_url) }}" 
                      class="card-img-top product-image" alt="{{ product.title }}">
                 {% else %}
-                <div class="card-img-top product-placeholder d-flex align-items-center justify-content-center">
+                <div class="card-img-top product-placeholder">
                     <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
                 </div>
                 {% endif %}
                 {% if product.is_sold %}
-                <span class="badge bg-danger position-absolute top-0 end-0 m-2">SOLD</span>
+                <span class="badge position-absolute top-0 end-0 m-3" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; font-weight: 700; padding: 0.5rem 0.75rem; border-radius: 50px;">SOLD</span>
                 {% endif %}
-                <div class="category-badge position-absolute top-0 start-0 m-2">
-                    <span class="badge bg-success">{{ product.category }}</span>
+                <div class="category-badge position-absolute top-0 start-0 m-3">
+                    <span class="badge">{{ product.category }}</span>
                 </div>
             </div>
             <div class="card-body d-flex flex-column">
                 <h5 class="card-title">{{ product.title }}</h5>
-                <p class="card-text text-muted flex-grow-1">
+                <p class="card-text flex-grow-1">
                     {{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}
                 </p>
-                <div class="d-flex justify-content-between align-items-center mt-auto">
-                    <span class="h5 text-success mb-0">${{ "%.2f"|format(product.price) }}</span>
-                    <small class="text-muted">by {{ product.owner.username }}</small>
+                <div class="d-flex justify-content-between align-items-center mt-auto mb-3">
+                    <span class="h4 gradient-text mb-0 fw-bold">${{ "%.2f"|format(product.price) }}</span>
+                    <div class="text-end">
+                        <small class="text-muted d-block">by</small>
+                        <strong class="text-success">{{ product.owner.username }}</strong>
+                    </div>
                 </div>
-                <div class="mt-2">
-                    <a href="{{ url_for('product_detail', id=product.id) }}" class="btn btn-outline-success btn-sm">
-                        <i class="fas fa-eye me-1"></i>View Details
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('product_detail', id=product.id) }}" class="btn btn-outline-success btn-sm flex-fill">
+                        <i class="fas fa-eye me-1"></i>Details
                     </a>
                     {% if current_user.is_authenticated and not product.is_sold and product.owner != current_user %}
-                    <a href="{{ url_for('add_to_cart', id=product.id) }}" class="btn btn-success btn-sm">
+                    <a href="{{ url_for('add_to_cart', id=product.id) }}" class="btn btn-success btn-sm flex-fill">
                         <i class="fas fa-cart-plus me-1"></i>Add to Cart
                     </a>
                     {% endif %}
