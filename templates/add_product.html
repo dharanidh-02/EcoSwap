@@ -2,36 +2,59 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow">
-            <div class="card-header bg-success text-white">
-                <h4 class="mb-0"><i class="fas fa-plus me-2"></i>List New Product</h4>
+    <div class="col-md-10 col-lg-8">
+        <div class="card glass shadow-lg">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, var(--eco-primary), var(--eco-secondary));">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus me-2"></i>List New Product
+                </h4>
+                <small class="opacity-75">Share your items with the EcoSwap community</small>
             </div>
             <div class="card-body p-4">
-                <form method="POST" action="" enctype="multipart/form-data">
+                <form method="POST" action="" enctype="multipart/form-data" id="productForm">
                     {{ form.hidden_tag() }}
                     
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Product Title</label>
-                        {{ form.title(class="form-control", placeholder="Enter a descriptive title") }}
+                    <!-- Product Title -->
+                    <div class="mb-4">
+                        <label for="title" class="form-label fw-bold">
+                            <i class="fas fa-tag me-2 text-success"></i>Product Title
+                        </label>
+                        {{ form.title(class="form-control form-control-lg", placeholder="Enter a descriptive title for your product") }}
                         {% for error in form.title.errors %}
                         <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
                     
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="category" class="form-label">Category</label>
+                        <!-- Category -->
+                        <div class="col-md-4 mb-3">
+                            <label for="category" class="form-label fw-bold">
+                                <i class="fas fa-folder me-2 text-primary"></i>Category
+                            </label>
                             {{ form.category(class="form-select") }}
                             {% for error in form.category.errors %}
                             <div class="text-danger small mt-1">{{ error }}</div>
                             {% endfor %}
                         </div>
                         
-                        <div class="col-md-6 mb-3">
-                            <label for="price" class="form-label">Price ($)</label>
+                        <!-- Condition -->
+                        <div class="col-md-4 mb-3">
+                            <label for="condition" class="form-label fw-bold">
+                                <i class="fas fa-star me-2 text-warning"></i>Condition
+                            </label>
+                            {{ form.condition(class="form-select") }}
+                            {% for error in form.condition.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Price -->
+                        <div class="col-md-4 mb-3">
+                            <label for="price" class="form-label fw-bold">
+                                <i class="fas fa-dollar-sign me-2 text-success"></i>Price
+                            </label>
                             <div class="input-group">
-                                <span class="input-group-text">$</span>
+                                <span class="input-group-text bg-success text-white">$</span>
                                 {{ form.price(class="form-control", placeholder="0.00", step="0.01") }}
                             </div>
                             {% for error in form.price.errors %}
@@ -40,47 +63,251 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        {{ form.description(class="form-control", rows="4", placeholder="Describe your item in detail...") }}
+                    <!-- Location -->
+                    <div class="mb-4">
+                        <label for="location" class="form-label fw-bold">
+                            <i class="fas fa-map-marker-alt me-2 text-info"></i>Location (Optional)
+                        </label>
+                        {{ form.location(class="form-control", placeholder="City, State (helps buyers find you)") }}
+                        {% for error in form.location.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label fw-bold">
+                            <i class="fas fa-align-left me-2 text-secondary"></i>Description
+                        </label>
+                        {{ form.description(class="form-control", rows="5", placeholder="Describe your item in detail - condition, features, size, etc.") }}
+                        <div class="form-text">Be detailed! Good descriptions help your item sell faster.</div>
                         {% for error in form.description.errors %}
                         <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
                     
+                    <!-- Main Image -->
                     <div class="mb-4">
-                        <label for="image" class="form-label">Product Image</label>
-                        {{ form.image(class="form-control") }}
-                        <div class="form-text">Upload an image of your product (JPG, PNG, GIF - Max 16MB)</div>
+                        <label for="image" class="form-label fw-bold">
+                            <i class="fas fa-camera me-2 text-danger"></i>Main Product Image
+                        </label>
+                        {{ form.image(class="form-control", accept="image/*", onchange="previewMainImage(event)") }}
+                        <div class="form-text">Upload a clear, well-lit photo of your product (JPG, PNG, GIF - Max 16MB)</div>
                         {% for error in form.image.errors %}
                         <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
+                        
+                        <!-- Image Preview -->
+                        <div id="main-image-preview" class="mt-3 d-none">
+                            <img id="main-preview-img" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                        </div>
                     </div>
                     
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    <!-- Additional Images -->
+                    <div class="mb-4">
+                        <label for="additional_images" class="form-label fw-bold">
+                            <i class="fas fa-images me-2 text-purple"></i>Additional Images (Optional)
+                        </label>
+                        {{ form.additional_images(class="form-control", accept="image/*", multiple=true, onchange="previewAdditionalImages(event)") }}
+                        <div class="form-text">Upload up to 5 additional photos to showcase your product from different angles</div>
+                        {% for error in form.additional_images.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        
+                        <!-- Additional Images Preview -->
+                        <div id="additional-images-preview" class="mt-3 d-none">
+                            <div class="row" id="additional-preview-container"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Featured Listing -->
+                    {% if current_user.is_authenticated %}
+                    <div class="mb-4">
+                        <div class="card border-warning">
+                            <div class="card-body">
+                                <div class="form-check">
+                                    {{ form.is_featured(class="form-check-input") }}
+                                    <label class="form-check-label fw-bold" for="is_featured">
+                                        <i class="fas fa-star text-warning me-2"></i>Feature this product
+                                        <span class="badge bg-warning text-dark ms-2">Premium</span>
+                                    </label>
+                                </div>
+                                <small class="text-muted">Featured products appear at the top of search results and get more visibility.</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-1"></i>Cancel
                         </a>
-                        {{ form.submit(class="btn btn-success") }}
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-primary" onclick="previewListing()">
+                                <i class="fas fa-eye me-1"></i>Preview
+                            </button>
+                            {{ form.submit(class="btn btn-success btn-lg px-4") }}
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
         
         <!-- Tips Card -->
-        <div class="card mt-4">
+        <div class="card glass mt-4">
             <div class="card-header">
-                <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for a Great Listing</h6>
+                <h6 class="mb-0 gradient-text">
+                    <i class="fas fa-lightbulb me-2"></i>Tips for a Great Listing
+                </h6>
             </div>
             <div class="card-body">
-                <ul class="list-unstyled mb-0">
-                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use a clear, descriptive title</li>
-                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Include detailed descriptions and condition</li>
-                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Upload high-quality photos</li>
-                    <li class="mb-0"><i class="fas fa-check text-success me-2"></i>Price fairly based on condition</li>
-                </ul>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>Use a clear, descriptive title
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>Include detailed descriptions and condition
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>Upload multiple high-quality photos
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>Price fairly based on condition
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>Add your location to help buyers
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>Respond quickly to messages
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function previewMainImage(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('main-image-preview');
+    const img = document.getElementById('main-preview-img');
+    
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            img.src = e.target.result;
+            preview.classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+    } else if (!file) {
+        preview.classList.add('d-none');
+    }
+}
+
+function previewAdditionalImages(event) {
+    const files = event.target.files;
+    const preview = document.getElementById('additional-images-preview');
+    const container = document.getElementById('additional-preview-container');
+    
+    container.innerHTML = ''; // Clear existing previews
+    
+    if (files.length > 0) {
+        preview.classList.remove('d-none');
+        
+        for (let i = 0; i < Math.min(files.length, 5); i++) {
+            const file = files[i];
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const col = document.createElement('div');
+                    col.className = 'col-4 col-md-3 col-lg-2 mb-2';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'img-thumbnail w-100';
+                    img.style.height = '80px';
+                    img.style.objectFit = 'cover';
+                    
+                    col.appendChild(img);
+                    container.appendChild(col);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    } else {
+        preview.classList.add('d-none');
+    }
+}
+
+function previewListing() {
+    const title = document.getElementById('title').value;
+    const description = document.getElementById('description').value;
+    const price = document.getElementById('price').value;
+    const category = document.getElementById('category').value;
+    const condition = document.getElementById('condition').value;
+    
+    if (!title || !description || !price) {
+        alert('Please fill in the required fields (title, description, price) to preview your listing.');
+        return;
+    }
+    
+    alert(`Preview:\n\nTitle: ${title}\nCategory: ${category}\nCondition: ${condition}\nPrice: $${price}\n\nDescription: ${description.substring(0, 100)}${description.length > 100 ? '...' : ''}`);
+}
+
+// Form validation
+document.getElementById('productForm').addEventListener('submit', function(e) {
+    const submitBtn = document.querySelector('input[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.value = 'Listing Product...';
+    
+    // Re-enable after 10 seconds as fallback
+    setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.value = 'List Product';
+    }, 10000);
+});
+</script>
+
+<style>
+.glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--eco-primary), var(--eco-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--eco-primary);
+    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+}
+
+.card {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.form-label {
+    color: var(--eco-dark);
+}
+
+.text-purple {
+    color: #8b5cf6 !important;
+}
+</style>
 {% endblock %}

@@ -126,7 +126,7 @@
                         <h5 class="gradient-text">
                             <i class="fas fa-info-circle me-2"></i>Description
                         </h5>
-                        <p class="text-muted mb-0">{{ product.description|nl2br }}</p>
+                        <p class="text-muted mb-0">{{ product.description|replace('\n', '<br>')|safe }}</p>
                     </div>
                     
                     <!-- Seller Information -->
