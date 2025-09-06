@@ -1,0 +1,169 @@
+Title: EcoFinds – Sustainable Second-Hand Marketplace (Foundational Prototype)
+
+Framework & Language: Python with Flask
+
+Project Requirements:
+Develop a Flask-based web application that implements the foundational version of EcoFinds, focusing on user authentication and product listing functionalities. The app should be designed with both desktop and mobile users in mind (responsive design using Bootstrap or Tailwind).
+
+Core Functionalities to Implement
+1. User Authentication & Dashboard
+
+User registration and login using email & password (secure password hashing with Flask-Bcrypt).
+
+Basic profile creation: username and email.
+
+User Dashboard: display user details and allow editing (username, email, password).
+
+2. Product Listings (CRUD)
+
+Add New Product:
+
+Title (text input)
+
+Description (textarea)
+
+Category (dropdown with predefined options, e.g., Electronics, Clothing, Furniture, Books)
+
+Price (number input)
+
+Image placeholder (file upload or static placeholder if no image uploaded)
+
+Manage Listings:
+
+View user’s products
+
+Edit product details
+
+Delete products
+
+3. Product Browsing & Discovery
+
+Home/Feed page showing all available product listings.
+
+Display: placeholder image, title, price.
+
+Filtering: filter products by category (dropdown or buttons).
+
+Search: keyword-based search in product title.
+
+Product Detail View: show full details (title, description, category, price, image).
+
+4. Shopping Features
+
+Cart Page:
+
+Add products to cart
+
+Display cart items as cards (image, title, price)
+
+Previous Purchases Page:
+
+Show a list of products that the user has previously purchased
+
+Wireframes (based on the mockup)
+
+Login/Sign Up Screen
+
+Logo, email, password, login button, signup link
+
+Product Listing Feed
+
+Header with logo, search bar, category filter, product list, "+" button
+
+Add New Product
+
+Title, category, description, price, image placeholder, submit button
+
+My Listings
+
+User’s products with edit & delete options
+
+Product Detail View
+
+Large image placeholder, title, category, description, price
+
+User Dashboard
+
+User profile details with edit functionality
+
+Cart Page
+
+List of products added to cart as cards
+
+Previous Purchases
+
+List view of purchased products
+
+Technical Requirements
+
+Flask for backend
+
+SQLite/MySQL for database
+
+SQLAlchemy ORM for managing models
+
+Flask-WTF for forms & validation
+
+Flask-Login for authentication & session management
+
+Flask-Bcrypt for password hashing
+
+HTML + Bootstrap/Tailwind for responsive frontend
+
+RESTful routes for CRUD operations
+
+Suggested Data Models
+
+User:
+
+id (int, primary key)
+
+username (string)
+
+email (string, unique)
+
+password_hash (string)
+
+Product:
+
+id (int, primary key)
+
+title (string)
+
+description (text)
+
+category (string)
+
+price (float)
+
+image_url (string/placeholder)
+
+owner_id (foreign key → User.id)
+
+Cart:
+
+id (int, primary key)
+
+user_id (foreign key → User.id)
+
+product_id (foreign key → Product.id)
+
+PurchaseHistory:
+
+id (int, primary key)
+
+user_id (foreign key → User.id)
+
+product_id (foreign key → Product.id)
+
+purchase_date (datetime)
+
+Deliverables
+
+A fully working Flask project with authentication, product CRUD, cart, and browsing features.
+
+Responsive UI with Bootstrap or Tailwind.
+
+Database schema with migrations.
+
+Clear instructions in README.md for setup & running.
