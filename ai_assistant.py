@@ -1,10 +1,24 @@
 import os
 import logging
-from google import genai
-from google.genai import types
 
-# Initialize Gemini client
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+# Try to initialize Gemini client, but handle missing API key gracefully
+client = None
+genai = None
+types = None
+
+try:
+    from google import genai as google_genai
+    from google.genai import types as google_types
+    genai = google_genai
+    types = google_types
+    
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if api_key:
+        client = genai.Client(api_key=api_key)
+    else:
+        logging.warning("GEMINI_API_KEY not found. AI assistant will use fallback responses.")
+except ImportError:
+    logging.warning("Google GenAI package not found. AI assistant will use fallback responses.")
 
 class EcoSwapAssistant:
     def __init__(self):
@@ -57,6 +71,10 @@ class EcoSwapAssistant:
     
     def get_response(self, user_message, conversation_history=None):
         """Get AI response for user message"""
+        # If client or types are not available, use fallback responses
+        if not client or not types:
+            return self._get_fallback_response(user_message)
+            
         try:
             # Build conversation context
             conversation = []
@@ -96,7 +114,28 @@ class EcoSwapAssistant:
             
         except Exception as e:
             logging.error(f"AI Assistant error: {e}")
-            return "I'm experiencing technical difficulties. Please try again in a moment or contact support if the issue persists."
+            return self._get_fallback_response(user_message)
+    
+    def _get_fallback_response(self, user_message):
+        """Provide fallback responses when AI is not available"""
+        user_message_lower = user_message.lower()
+        
+        if any(word in user_message_lower for word in ['register', 'sign up', 'account']):
+            return self.get_quick_help('register')
+        elif any(word in user_message_lower for word in ['sell', 'list', 'post']):
+            return self.get_quick_help('sell')
+        elif any(word in user_message_lower for word in ['buy', 'purchase', 'order']):
+            return self.get_quick_help('buy')
+        elif any(word in user_message_lower for word in ['search', 'find', 'look']):
+            return self.get_quick_help('search')
+        elif any(word in user_message_lower for word in ['cart', 'basket']):
+            return self.get_quick_help('cart')
+        elif any(word in user_message_lower for word in ['profile', 'dashboard', 'account']):
+            return self.get_quick_help('account')
+        elif any(word in user_message_lower for word in ['listings', 'my items', 'manage']):
+            return self.get_quick_help('listings')
+        else:
+            return "Hello! I'm the EcoSwap AI Assistant. I can help you with buying and selling second-hand items on our sustainable marketplace. What would you like to know about?"
     
     def get_quick_help(self, topic):
         """Get quick help responses for common topics"""
