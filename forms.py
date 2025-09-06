@@ -5,6 +5,24 @@ from wtforms import (StringField, TextAreaField, SelectField, FloatField, Passwo
 from wtforms.validators import DataRequired, Email, Length, NumberRange, EqualTo, ValidationError, Optional
 from models import User
 
+# Custom validator for images
+def validate_image_file(form, field):
+    if field.data:
+        filename = field.data.filename
+        if filename:
+            allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+            if '.' in filename and filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
+                raise ValidationError('Only PNG, JPG, JPEG, and GIF images are allowed!')
+
+def validate_multiple_images(form, field):
+    if field.data:
+        for file_data in field.data:
+            if file_data and file_data.filename:
+                filename = file_data.filename
+                allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+                if '.' in filename and filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
+                    raise ValidationError(f'File {filename}: Only PNG, JPG, JPEG, and GIF images are allowed!')
+
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -58,9 +76,9 @@ class ProductForm(FlaskForm):
                            default='Good')
     price = FloatField('Price ($)', validators=[DataRequired(), NumberRange(min=0.01)])
     location = StringField('Location (City, State)', validators=[Optional(), Length(max=100)])
-    image = FileField('Main Product Image', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Images only!')])
+    image = FileField('Main Product Image', validators=[Optional(), validate_image_file])
     additional_images = MultipleFileField('Additional Images (up to 5)', 
-                                         validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Images only!')])
+                                         validators=[Optional(), validate_multiple_images])
     is_featured = BooleanField('Feature this product (premium listing)')
     submit = SubmitField('Add Product')
 
