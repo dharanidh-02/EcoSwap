@@ -85,3 +85,7 @@ class SearchForm(FlaskForm):
                                  ('Toys', 'Toys'),
                                  ('Other', 'Other')])
     submit = SubmitField('Search')
+
+class ChatForm(FlaskForm):
+    message = TextAreaField('Ask me anything about EcoSwap...', validators=[DataRequired(), Length(max=500)])
+    submit = SubmitField('Send')

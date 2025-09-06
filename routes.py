@@ -6,8 +6,9 @@ from werkzeug.utils import secure_filename
 from app import db, bcrypt
 from models import User, Product, Cart, PurchaseHistory
 from forms import (LoginForm, RegistrationForm, EditProfileForm, ChangePasswordForm, 
-                   ProductForm, SearchForm)
+                   ProductForm, SearchForm, ChatForm)
 from utils import allowed_file, save_image
+from ai_assistant import assistant
 
 def register_routes(app):
     
@@ -272,3 +273,63 @@ def register_routes(app):
             page=page, per_page=10, error_out=False)
         
         return render_template('purchase_history.html', title='Purchase History', purchases=purchases)
+
+    @app.route('/ai_chat', methods=['GET', 'POST'])
+    def ai_chat():
+        form = ChatForm()
+        chat_history = request.form.getlist('chat_history') if request.method == 'POST' else []
+        
+        if form.validate_on_submit():
+            user_message = form.message.data
+            
+            # Get AI response
+            ai_response = assistant.get_response(user_message)
+            
+            # Add to chat history
+            chat_history.append({
+                'role': 'user',
+                'content': user_message,
+                'timestamp': 'now'
+            })
+            chat_history.append({
+                'role': 'assistant',
+                'content': ai_response,
+                'timestamp': 'now'
+            })
+            
+            form.message.data = ''  # Clear the form
+        
+        return render_template('ai_chat.html', title='AI Assistant', form=form, chat_history=chat_history)
+
+    @app.route('/api/ai_chat', methods=['POST'])
+    def api_ai_chat():
+        """API endpoint for AJAX chat requests"""
+        try:
+            data = request.get_json()
+            user_message = data.get('message', '')
+            conversation_history = data.get('history', [])
+            
+            if not user_message:
+                return {'error': 'Message is required'}, 400
+            
+            # Get AI response
+            ai_response = assistant.get_response(user_message, conversation_history)
+            
+            return {
+                'response': ai_response,
+                'status': 'success'
+            }
+        except Exception as e:
+            return {'error': 'Failed to get AI response', 'status': 'error'}, 500
+
+    @app.route('/api/quick_help/<topic>')
+    def api_quick_help(topic):
+        """API endpoint for quick help responses"""
+        try:
+            response = assistant.get_quick_help(topic)
+            return {
+                'response': response,
+                'status': 'success'
+            }
+        except Exception as e:
+            return {'error': 'Failed to get help', 'status': 'error'}, 500

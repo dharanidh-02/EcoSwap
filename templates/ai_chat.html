@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>EcoSwap AI Assistant
+                    </h4>
+                    <p class="mb-0 small">Ask me anything about our sustainable marketplace!</p>
+                </div>
+                
+                <div class="card-body p-0">
+                    <!-- Chat History -->
+                    <div id="chat-history" class="chat-history p-3" style="height: 400px; overflow-y: auto;">
+                        {% if chat_history %}
+                            {% for message in chat_history %}
+                                {% if message.role == 'user' %}
+                                <div class="message user-message mb-3">
+                                    <div class="d-flex justify-content-end">
+                                        <div class="bg-primary text-white rounded-3 p-3 max-width-75">
+                                            <strong>You:</strong><br>
+                                            {{ message.content }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="message bot-message mb-3">
+                                    <div class="d-flex justify-content-start">
+                                        <div class="bg-light border rounded-3 p-3 max-width-75">
+                                            <strong><i class="fas fa-robot text-success me-1"></i>EcoSwap AI:</strong><br>
+                                            {{ message.content|nl2br }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-robot fa-3x mb-3 text-success"></i>
+                            <h5>Welcome to EcoSwap AI Assistant!</h5>
+                            <p>I'm here to help you navigate our sustainable marketplace.<br>
+                            Ask me about buying, selling, account management, or any other questions!</p>
+                            
+                            <!-- Quick Help Buttons -->
+                            <div class="mt-4">
+                                <h6>Quick Help:</h6>
+                                <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    <button class="btn btn-outline-success btn-sm quick-help" data-topic="register">
+                                        <i class="fas fa-user-plus me-1"></i>How to Register
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm quick-help" data-topic="sell">
+                                        <i class="fas fa-tag me-1"></i>How to Sell
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm quick-help" data-topic="buy">
+                                        <i class="fas fa-shopping-cart me-1"></i>How to Buy
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm quick-help" data-topic="search">
+                                        <i class="fas fa-search me-1"></i>How to Search
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="chat-input border-top p-3">
+                        <form method="POST" action="" id="chat-form">
+                            {{ form.hidden_tag() }}
+                            <div class="input-group">
+                                {{ form.message(class="form-control", placeholder="Ask me anything about EcoSwap...", rows="2") }}
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-paper-plane me-1"></i>Send
+                                </button>
+                            </div>
+                            {% for error in form.message.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Help Tips -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6><i class="fas fa-lightbulb text-warning me-2"></i>Tips for better assistance:</h6>
+                    <ul class="list-unstyled small mb-0">
+                        <li><i class="fas fa-check text-success me-2"></i>Be specific about what you want to do</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Ask about features, navigation, or account help</li>
+                        <li><i class="fas fa-check text-success me-2"></i>I can help with buying, selling, and account management</li>
+                        <li><i class="fas fa-check text-success me-2"></i>For technical issues, try refreshing the page first</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.max-width-75 {
+    max-width: 75%;
+}
+
+.chat-history {
+    background-color: #f8f9fa;
+}
+
+.user-message .bg-primary {
+    background-color: var(--eco-primary) !important;
+}
+
+.message {
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.quick-help:hover {
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-scroll to bottom of chat
+    const chatHistory = document.getElementById('chat-history');
+    if (chatHistory) {
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+    
+    // Quick help buttons
+    document.querySelectorAll('.quick-help').forEach(button => {
+        button.addEventListener('click', function() {
+            const topic = this.dataset.topic;
+            
+            // Add user message to chat
+            const userMessage = `Help me with: ${this.textContent.trim()}`;
+            addMessageToChat('user', userMessage);
+            
+            // Get quick help response
+            fetch(`/api/quick_help/${topic}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        addMessageToChat('assistant', data.response);
+                    } else {
+                        addMessageToChat('assistant', 'Sorry, I encountered an error. Please try asking your question in the chat box.');
+                    }
+                })
+                .catch(error => {
+                    addMessageToChat('assistant', 'Sorry, I encountered an error. Please try asking your question in the chat box.');
+                });
+        });
+    });
+    
+    // Enhanced form submission
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.querySelector('#message');
+    
+    if (chatForm && messageInput) {
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Add user message to chat immediately
+            addMessageToChat('user', message);
+            messageInput.value = '';
+            
+            // Send to AI
+            fetch('/api/ai_chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    history: getChatHistory()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    addMessageToChat('assistant', data.response);
+                } else {
+                    addMessageToChat('assistant', 'Sorry, I encountered an error. Please try again.');
+                }
+            })
+            .catch(error => {
+                addMessageToChat('assistant', 'Sorry, I encountered an error. Please try again.');
+            });
+        });
+        
+        // Send on Enter key (Shift+Enter for new line)
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+    }
+});
+
+function addMessageToChat(role, content) {
+    const chatHistory = document.getElementById('chat-history');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${role}-message mb-3`;
+    
+    if (role === 'user') {
+        messageDiv.innerHTML = `
+            <div class="d-flex justify-content-end">
+                <div class="bg-primary text-white rounded-3 p-3 max-width-75">
+                    <strong>You:</strong><br>
+                    ${content}
+                </div>
+            </div>
+        `;
+    } else {
+        messageDiv.innerHTML = `
+            <div class="d-flex justify-content-start">
+                <div class="bg-light border rounded-3 p-3 max-width-75">
+                    <strong><i class="fas fa-robot text-success me-1"></i>EcoSwap AI:</strong><br>
+                    ${content.replace(/\n/g, '<br>')}
+                </div>
+            </div>
+        `;
+    }
+    
+    chatHistory.appendChild(messageDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function getChatHistory() {
+    const messages = document.querySelectorAll('.message');
+    const history = [];
+    
+    messages.forEach(message => {
+        const isUser = message.classList.contains('user-message');
+        const content = message.querySelector('.rounded-3').textContent.replace(/^(You:|EcoSwap AI:)/, '').trim();
+        
+        history.push({
+            role: isUser ? 'user' : 'assistant',
+            content: content
+        });
+    });
+    
+    return history.slice(-6); // Keep last 6 messages
+}
+</script>
+{% endblock %}
